@@ -1,0 +1,65 @@
+dir = File.expand_path(File.dirname(__FILE__))
+require "#{dir}/helper"
+
+describe "Micon Overview" do
+  it "sample" do
+    class Object
+      def app; Micon end
+    end
+    
+  	# static (singleton) components
+  	class Environment
+  		register_as :environment
+  	end
+
+  	class Logger
+  		register_as :logger
+  		
+  		def info msg; end
+  	end	
+
+  	class Router
+  		register_as :router
+  		
+  		def parse rote_filename
+  		  # do something
+  		end
+  	end
+
+  	# callbacks, we need to parse routes right after environment will be initialized
+  	app.after :environment do
+  		app[:router].parse '/config/routes.rb'
+  	end
+
+  	# dynamic	components, will be created and destroyed for every request
+  	class Request
+  		register_as :request, :scope => :request
+  	end
+
+  	class Application
+  		# injecting components into attributes
+  		inject :request => :request, :logger => :logger
+
+  		def do_business
+  			# now we can use injected component
+  			logger.info "routes parsed"
+  			do_something_with request
+  			logger.info 'well done'
+  		end
+  		
+  		def do_something_with request; end
+  	end
+
+  	# Web Server / Rack Adapter
+  	class RackAdapter
+  		def call env		
+  			# activating new request scope, the session component will be created and destroyed automatically
+  			app.activate :request, {} do
+  				Application.new.do_business
+  			end
+  		end
+  	end    
+  	
+  	RackAdapter.new.call({})
+  end
+end
