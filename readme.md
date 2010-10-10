@@ -32,12 +32,12 @@ Let's suppose you are building the Ruby on Rails clone, there are lots of module
 		end
 	end
 
-	# callbacks, we need to parse routes right after environment will be initialized
+	# callbacks, we need to parse routes right after environment is initialized
 	app.after :environment do
 		app[:router].parse '/config/routes.rb'
 	end
 
-	# dynamic	components, will be created and destroyed for every request
+	# dynamic components, will be created and destroyed for every request
 	class Request
 		register_as :request, :scope => :request
 	end
@@ -48,9 +48,8 @@ Let's suppose you are building the Ruby on Rails clone, there are lots of module
 
 		def do_business
 			# now we can use injected component
-			logger.info "routes parsed"
 			do_something_with request
-			logger.info 'well done'
+			logger.info 'done'
 		end
 		
 		def do_something_with request; end
