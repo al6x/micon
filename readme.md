@@ -4,7 +4,7 @@ Micon is infrastructural component, invisible to user and it's main goal is to s
 
 Concentrate on business logic and interfaces and Micon will provide automatic configuration, life cycle management and dependency resolving.
 
-Technically it's like [IoC][ioc] container managing components, callbacks, scopes and bijections, inspired by Spring and JBoss Seam.
+Technically it's [IoC][ioc] like framework with components, callbacks, scopes and bijections, inspired by Spring and JBoss Seam.
 
 ## Usage
 	
