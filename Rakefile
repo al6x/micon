@@ -7,5 +7,5 @@ gem_spec(
   :dependencies => %w(),
 
   :author => "Alexey Petrushin",
-  :homepage => "http://github.com/alexeypetrushin/jquery_client"
+  :homepage => "http://github.com/alexeypetrushin/micon"
 )
