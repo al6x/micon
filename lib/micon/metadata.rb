@@ -16,6 +16,8 @@ module Micon
         @initializers.clear
         @before.clear
         @after.clear
+        @before_scope.clear
+        @after_scope.clear
       end
     end
     
@@ -25,6 +27,8 @@ module Micon
         @initializers.delete key
         @before.delete key
         @after.delete key
+        @before_scope.delete key
+        @after_scope.delete key
       end
     end
     

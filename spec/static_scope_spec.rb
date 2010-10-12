@@ -1,5 +1,5 @@
-dir = File.expand_path(File.dirname(__FILE__))
-require "#{dir}/helper"
+require 'rspec_ext'
+require "#{__FILE__.dirname}/helper"
 
 describe "Application and Instance scopes" do  
   before :each do
