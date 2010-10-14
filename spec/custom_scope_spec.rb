@@ -1,5 +1,4 @@
-require 'rspec_ext'
-require "#{__FILE__.dirname}/helper"
+require 'spec_helper'
 
 describe "Micon custom scope" do
   before :each do

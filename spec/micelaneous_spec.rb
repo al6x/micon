@@ -1,5 +1,4 @@
-require 'rspec_ext'
-require "#{__FILE__.dirname}/helper"
+require 'spec_helper'
 
 describe "Micelaneous" do  
   before :each do
