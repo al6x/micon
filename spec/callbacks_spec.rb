@@ -40,14 +40,14 @@ describe "Callbacks" do
   describe "custom scope callbacks" do
     it "scope :before and :after callbacks" do
       check = mock
-      check.should_receive(:before).ordered
+      check.should_receive(:before).with({}).ordered
       check.should_receive(:run).ordered
-      check.should_receive(:after).ordered
-      check.should_receive(:after2).ordered
+      check.should_receive(:after).with({}).ordered
+      check.should_receive(:after2).with({}).ordered
 
-      Micon.before_scope(:custom){check.before}
-      Micon.after_scope(:custom){check.after}
-      Micon.after_scope(:custom){check.after2}
+      Micon.before_scope(:custom){|container| check.before container}
+      Micon.after_scope(:custom){|container| check.after container}
+      Micon.after_scope(:custom){|container| check.after2 container}
 
       Micon.activate(:custom, {}){check.run}
     end    

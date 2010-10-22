@@ -30,14 +30,14 @@ module Micon
         begin
           outer_container_or_nil = Thread.current[scope_with_prefix]
           Thread.current[scope_with_prefix] = container
-          @metadata.with_scope_callbacks scope, &block
+          @metadata.with_scope_callbacks scope, container, &block
         ensure
           Thread.current[scope_with_prefix] = outer_container_or_nil
         end
       else        
         # not support nested scopes without block
         Thread.current[scope_with_prefix] = container
-        @metadata.call_before_scope scope
+        @metadata.call_before_scope scope, container
       end
     end
     
@@ -47,7 +47,7 @@ module Micon
       scope_with_prefix = add_prefix(scope)      
       raise_without_self "Scope '#{scope}' not active!" unless container = Thread.current[scope_with_prefix]
       
-      @metadata.call_after_scope scope
+      @metadata.call_after_scope scope, container
       Thread.current[scope_with_prefix] = nil
       container
     end

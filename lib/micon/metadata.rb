@@ -96,22 +96,22 @@ module Micon
       end
     end
     
-    def call_before_scope key
+    def call_before_scope key, container
       if callbacks = @before_scope[key]
-        callbacks.each{|c| c.call}
+        callbacks.each{|c| c.call container}
       end
     end
     
-    def call_after_scope key
+    def call_after_scope key, container
       if callbacks = @after_scope[key]
-        callbacks.each{|c| c.call}
+        callbacks.each{|c| c.call container}
       end
     end
     
-    def with_scope_callbacks key, &block
-      call_before_scope key
+    def with_scope_callbacks key, container, &block
+      call_before_scope key, container
       result = block.call
-      call_after_scope key
+      call_after_scope key, container
       result
     end
     
