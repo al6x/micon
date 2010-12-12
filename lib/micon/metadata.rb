@@ -11,7 +11,7 @@ module Micon
     end
     
     def clear
-      @sync.synchronize do 
+      @sync.synchronize do         
         @registry.clear
         @initializers.clear
         @before.clear
