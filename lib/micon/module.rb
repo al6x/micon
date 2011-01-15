@@ -1,5 +1,5 @@
 class Module  
-  # inject :attribute => :session
+  # inject attribute: :session
   def inject attributes
     Micon.raise_without_self "Invalid argument!" unless attributes.is_a? Hash
     attributes.each do |name, specificator|

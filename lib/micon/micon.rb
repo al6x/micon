@@ -218,7 +218,7 @@ module Micon
             #   'environment'
             # end
             # 
-            # Micon.register :conveyors, :application, :depends_on => :environment do
+            # Micon.register :conveyors, :application, depends_on: :environment do
             #   p :conveyors
             #   'conveyors'
             # end

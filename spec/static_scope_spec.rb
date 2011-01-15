@@ -7,7 +7,7 @@ describe "Application and Instance scopes" do
   end
   
   it "instance scope" do    
-    Micon.register(:value, :scope => :instance){"The Object"}
+    Micon.register(:value, scope: :instance){"The Object"}
     
     Micon[:value].should == "The Object"
     Micon[:value].object_id.should_not == Micon[:value].object_id
@@ -34,12 +34,12 @@ describe "Application and Instance scopes" do
   
     class CycleA      
       register_as :cycle_a
-      inject :b => :cycle_b
+      inject b: :cycle_b
     end
   
     class CycleB      
       register_as :cycle_b
-      inject :a => :cycle_a
+      inject a: :cycle_a
     end
     
     a = Micon[:cycle_a]

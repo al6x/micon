@@ -6,10 +6,10 @@ describe "Micon Managed" do
     
     class ManagedObject      
       register_as :managed_object
-      inject :object => :object_key
+      inject object: :object_key
 
       class << self        
-        inject :object => :object_key
+        inject object: :object_key
       end
     end
   end

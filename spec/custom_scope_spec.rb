@@ -24,13 +24,13 @@ describe "Micon custom scope" do
   end
   
   it "check" do
-    Micon.register(:value, :scope => :custom){"The Object"}
+    Micon.register(:value, scope: :custom){"The Object"}
     lambda{Micon[:value]}.should raise_error(/not started/)
     lambda{Micon[:value] = nil}.should raise_error(/not started/)
   end
   
   it "get" do
-    Micon.register(:value, :scope => :custom){"The Object"}
+    Micon.register(:value, scope: :custom){"The Object"}
     container, the_object = {}, nil
     
     Micon.activate :custom, container do
@@ -51,7 +51,7 @@ describe "Micon custom scope" do
   end
   
   it "set" do
-    Micon.register(:value, :scope => :custom){"The Object"}
+    Micon.register(:value, scope: :custom){"The Object"}
     container = {}
     
     Micon.activate :custom, container do

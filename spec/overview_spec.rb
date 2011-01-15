@@ -32,12 +32,12 @@ describe "Micon Overview" do
 
   	# dynamic components, will be created and destroyed for every request
   	class Request
-  		register_as :request, :scope => :request
+  		register_as :request, scope: :request
   	end
 
   	class Application
   		# injecting components into attributes
-  		inject :request => :request, :logger => :logger
+  		inject request: :request, logger: :logger
 
   		def do_business
   			# now we can use injected component

@@ -22,7 +22,7 @@ describe "Micelaneous" do
   end  
   
   it "dependencies" do        
-    Micon.register :another_object, :depends_on => :the_object
+    Micon.register :another_object, depends_on: :the_object
     lambda{Micon[:another_object]}.should raise_error(/the_object/)
     Micon.register :the_object
     Micon[:another_object]
@@ -38,7 +38,7 @@ describe "Micelaneous" do
       'environment'
     end
     
-    Micon.register :router, :depends_on => :environment do
+    Micon.register :router, depends_on: :environment do
       check.router
       'router'
     end

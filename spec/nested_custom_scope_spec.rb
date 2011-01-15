@@ -7,7 +7,7 @@ describe "Micon nested custom scope" do
   end
   
   it "with block" do
-    Micon.register :value, :scope => :custom
+    Micon.register :value, scope: :custom
     
     custom_a = {}
     Micon.activate :custom, custom_a do
