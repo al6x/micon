@@ -26,6 +26,6 @@ describe "Micon nested custom scope" do
   
   it "should not support nested scopes without block" do
     Micon.activate :custom, {}
-    lambda{Micon.activate :custom, {}}.should raise_error(/active/)
+    -> {Micon.activate :custom, {}}.should raise_error(/active/)
   end
 end

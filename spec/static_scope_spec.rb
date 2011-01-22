@@ -53,6 +53,6 @@ describe "Application and Instance scopes" do
     Micon[:value].should == "The Object"
     
     Micon.unregister :value
-    lambda{Micon[:value]}.should raise_error(/component not managed/)
+    -> {Micon[:value]}.should raise_error(/component not managed/)
   end
 end

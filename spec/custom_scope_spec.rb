@@ -12,10 +12,10 @@ describe "Micon custom scope" do
     Micon.activate :custom, container
     Micon.should be_active(:custom)
 
-    lambda{Micon.activate :custom, container}.should raise_error(/active/)
+    -> {Micon.activate :custom, container}.should raise_error(/active/)
 
     Micon.deactivate :custom
-    lambda{Micon.deactivate :custom}.should raise_error(/not active/)
+    -> {Micon.deactivate :custom}.should raise_error(/not active/)
     
     Micon.should_not be_active(:custom)
     Micon.activate :custom, container do
@@ -25,8 +25,8 @@ describe "Micon custom scope" do
   
   it "check" do
     Micon.register(:value, scope: :custom){"The Object"}
-    lambda{Micon[:value]}.should raise_error(/not started/)
-    lambda{Micon[:value] = nil}.should raise_error(/not started/)
+    -> {Micon[:value]}.should raise_error(/not started/)
+    -> {Micon[:value] = nil}.should raise_error(/not started/)
   end
   
   it "get" do

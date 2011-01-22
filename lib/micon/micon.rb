@@ -163,7 +163,7 @@ module Micon
           raise "internal error, reference to registry aren't equal to actual registry!" 
         end
         @metadata.registry[key] = scope
-        @metadata.initializers[key] = [(initializer || lambda{nil}), dependencies]
+        @metadata.initializers[key] = [(initializer || -> {nil}), dependencies]
       end
     end
     

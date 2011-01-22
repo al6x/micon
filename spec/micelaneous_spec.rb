@@ -23,7 +23,7 @@ describe "Micelaneous" do
   
   it "dependencies" do        
     Micon.register :another_object, depends_on: :the_object
-    lambda{Micon[:another_object]}.should raise_error(/the_object/)
+    -> {Micon[:another_object]}.should raise_error(/the_object/)
     Micon.register :the_object
     Micon[:another_object]
   end
