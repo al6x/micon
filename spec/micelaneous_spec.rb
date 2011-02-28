@@ -1,6 +1,8 @@
 require 'spec_helper'
 
-describe "Micelaneous" do  
+describe "Micelaneous" do
+  with_load_path "#{spec_dir}/autoload/lib"
+  
   before :each do
     Micon.clear
     Micon.metadata.clear
@@ -21,10 +23,14 @@ describe "Micelaneous" do
     Micon.instance_variable_get("@_r").should include(:the_object)
   end  
   
+  it "should autoload component definitions if not specified" do
+    Micon[:router].should == "router"
+  end
+  
   it "dependencies" do        
-    Micon.register :another_object, depends_on: :the_object
+    Micon.register(:another_object, depends_on: :the_object){"another_object"}
     -> {Micon[:another_object]}.should raise_error(/the_object/)
-    Micon.register :the_object
+    Micon.register(:the_object){"the_object"}
     Micon[:another_object]
   end
   

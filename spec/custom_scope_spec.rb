@@ -26,7 +26,7 @@ describe "Micon custom scope" do
   it "check" do
     Micon.register(:value, scope: :custom){"The Object"}
     -> {Micon[:value]}.should raise_error(/not started/)
-    -> {Micon[:value] = nil}.should raise_error(/not started/)
+    -> {Micon[:value] = 'value'}.should raise_error(/not started/)
   end
   
   it "get" do

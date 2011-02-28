@@ -38,7 +38,7 @@ describe "Micon Managed" do
     the_object = "The Object"
     Micon.register(:object_key)
 
-    ManagedObject.object.should be_nil    
+    -> {ManagedObject.object}.should raise_error(/no initializer/)
     ManagedObject.object = the_object
     ManagedObject.object.should == the_object
   end

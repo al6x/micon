@@ -19,12 +19,29 @@ describe "Application and Instance scopes" do
     Micon[:value].should == "The Object"
     Micon[:value].object_id.should == Micon[:value].object_id
   end
+  
+  it "should not allow to return nill in initializer" do
+    Micon.register(:value){nil}
+    -> {Micon[:value]}.should raise_error(/returns nill/)
+  end
+  
+  it "should not allow to register component without initializer but shouldn't allow to instantiate it" do
+    Micon.register :value
+    -> {Micon[:value]}.should raise_error(/no initializer/)
+  end
+  
+  it "should not allow to assign nill as component" do
+    Micon.register :value
+    -> {Micon[:value] = nil}.should raise_error(/can't assign nill/)
+  end
 
   it "application scope, outjection" do
     the_object = "The Object"
-    Micon.register :value
-    
-    Micon[:value].should be_nil
+    Micon.register :value do
+      "some_value"
+    end
+
+    Micon[:value].should == "some_value"
     Micon[:value] = the_object
     Micon[:value].object_id.should == the_object.object_id
   end
@@ -55,4 +72,6 @@ describe "Application and Instance scopes" do
     Micon.unregister :value
     -> {Micon[:value]}.should raise_error(/component not managed/)
   end
+  
+  it 'delete'
 end

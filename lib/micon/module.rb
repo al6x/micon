@@ -13,14 +13,20 @@ class Module
         specificator = "\"#{specificator}\""
       end
 
-      script = %{\
+      script = <<-RUBY
 def #{name}
-::Micon[#{specificator}]
+  ::Micon[#{specificator}]
 end
 
 def #{name}= value
-::Micon[#{specificator}] = value
-end}
+  ::Micon[#{specificator}] = value
+end
+
+def #{name}?
+  ::Micon.include? #{specificator}
+end
+      RUBY
+      
       self.class_eval script, __FILE__, __LINE__
     end
   end 

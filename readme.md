@@ -72,7 +72,14 @@ For actual code go to spec/overview_spec.rb
 ## Installation
 
 	$ sudo gem install micon
+	
+## TODO
 
-Copyright (c) 2009 Alexey Petrushin [http://bos-tec.com](http://bos-tec.com), released under the MIT license.
+- remove threads and synchronization support, probably it will be never needed in any real situation, because 
+there's no multithreading in ruby.
+- refactor specs, they are messy a little.
+- maybe it makes sense to add ability to add dependencies for components after component registration?
+
+Copyright (c) 2011 Alexey Petrushin [http://4ire.net](http://4ire.net), released under the MIT license.
 
 [ioc]: http://en.wikipedia.org/wiki/Inversion_of_control

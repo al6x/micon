@@ -15,7 +15,7 @@ describe "Micon nested custom scope" do
       
       custom_b = {}
       Micon.activate :custom, custom_b do
-        Micon[:value].should be_nil
+        Micon.should_not include(:value)
         Micon[:value] = 'value b'
         Micon[:value].should == 'value b'
       end

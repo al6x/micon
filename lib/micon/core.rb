@@ -3,29 +3,26 @@
 # Micons :"custom_name" are managed by 'scope_begin' / 'scope_end' methods
 # 
 # :"custom_name" can't be nested (it will destroy old and start new one) and always should be explicitly started!.
-
 module Micon
-  SYNC, MSYNC = Monitor.new, Monitor.new
+  module Core
+    SYNC, MSYNC = Monitor.new, Monitor.new    
     
-  # quick access to Metadata inner variable.
-  # I intentially broke the Metadata incapsulation to provide better performance, don't refactor it.
-  @_r = {} 
-    
-  @application, @metadata = {}, Metadata.new(@_r, MSYNC)
+    def self.extended target      
+      target.initialize_micon_core
+    end    
   
-  class << self
     attr_accessor :metadata
-    
+  
     #
     # Scope Management
     #
     def activate scope, container, &block
       raise_without_self "Only custom scopes can be activated!" if scope == :application or scope == :instance  
       raise "container should have type of Hash but has #{container.class.name}" unless container.is_a? Hash
-      
+    
       scope_with_prefix = add_prefix(scope)
       raise_without_self "Scope '#{remove_prefix(scope)}' already active!" if !block and Thread.current[scope_with_prefix]
-      
+    
       if block
         begin
           outer_container_or_nil = Thread.current[scope_with_prefix]
@@ -40,18 +37,18 @@ module Micon
         @metadata.call_before_scope scope, container
       end
     end
-    
+  
     def deactivate scope
       raise_without_self "Only custom scopes can be deactivated!" if scope == :application or scope == :instance
-      
+    
       scope_with_prefix = add_prefix(scope)      
       raise_without_self "Scope '#{scope}' not active!" unless container = Thread.current[scope_with_prefix]
-      
+    
       @metadata.call_after_scope scope, container
       Thread.current[scope_with_prefix] = nil
       container
     end
-    
+  
     def active? scope
       if scope == :application or scope == :instance
         true
@@ -59,14 +56,14 @@ module Micon
         Thread.current.key?(add_prefix(scope))
       end      
     end
-    
+  
     def clear      
       SYNC.synchronize{@application.clear}
       Thread.current.keys.each do |key|
         Thread.current[key] = nil if key.to_s =~ /^mc_/
       end
     end
-    
+  
     def empty?
       return false unless SYNC.synchronize{@application.empty?}
       Thread.current.keys.each do |key|
@@ -74,17 +71,15 @@ module Micon
       end
       return true
     end
-    
-    
+  
+  
     # 
     # Object Management
     # 
     def include? key
-      scope = MSYNC.synchronize{@_r[key]}
-      
+      scope = MSYNC.synchronize{@_r[key]} || autoload(key)
+    
       case scope
-      when nil
-        raise_without_self "'#{key}' component not managed!"
       when :instance
         true
       when :application
@@ -97,13 +92,11 @@ module Micon
         container.include? key
       end
     end
-    
+  
     def [] key
-      scope = MSYNC.synchronize{@_r[key]}
-
+      scope = MSYNC.synchronize{@_r[key]} || autoload(key)
+    
       case scope
-      when nil
-        raise_without_self "'#{key}' component not managed!"
       when :instance        
         return create_object(key)
       when :application
@@ -126,13 +119,13 @@ module Micon
         end
       end
     end
-    
+  
     def []= key, value
-      scope = MSYNC.synchronize{@_r[key]}
-      
+      raise "can't assign nill as :#{key} component!" unless value
+    
+      scope = MSYNC.synchronize{@_r[key]} || autoload(key)
+    
       case scope
-      when nil
-        raise_without_self "'#{key}' component not managed!"
       when :instance
         raise_without_self "You can't outject variable with the 'instance' scope!"
       when :application
@@ -142,68 +135,104 @@ module Micon
         raise_without_self "Scope '#{remove_prefix(scope)}' not started!" unless container
         container[key] = value
       end
-    end    
+    end  
+  
+    def delete key
+      scope = MSYNC.synchronize{@_r[key]} || autoload(key)
     
-    
+      case scope
+      when :instance
+        raise_without_self "You can't outject variable with the 'instance' scope!"
+      when :application
+        SYNC.synchronize{@application.delete key}
+      else # Custom
+        container = Thread.current[scope]
+        raise_without_self "Scope '#{remove_prefix(scope)}' not started!" unless container
+        container.delete key
+      end
+    end  
+  
+  
     # 
     # Metadata
     # 
     def register key, options = {}, &initializer
       raise "key should not be nil or false value!" unless key
       options = options.symbolize_keys      
-      
+    
       scope = options.delete(:scope) || :application
       scope = Micon.add_prefix(scope) unless scope == :application or scope == :instance
       dependencies = Array(options.delete(:require) || options.delete(:depends_on))
-      
+    
       options.each{|key| raise "Unknown option :#{key}!"}
-      
+    
       MSYNC.synchronize do
         unless @_r.object_id == @metadata.registry.object_id
           raise "internal error, reference to registry aren't equal to actual registry!" 
         end
         @metadata.registry[key] = scope
-        @metadata.initializers[key] = [(initializer || -> {nil}), dependencies]
+        @metadata.initializers[key] = [initializer, dependencies]
       end
     end
-    
+  
     def unregister key
       @metadata.delete key
     end
-    
+  
     def before component, &block
       @metadata.register_before component, &block
     end
-    
+  
     def after component, &block
       @metadata.register_after component, &block
     end
-    
+  
     def before_scope scope, &block
       @metadata.register_before_scope scope, &block
     end
-    
+  
     def after_scope scope, &block
       @metadata.register_after_scope scope, &block
     end
-    
+  
     # handy method, usually for test purposes
     def swap_metadata metadata = nil
       metadata ||= Metadata.new({}, MSYNC)
       old = self.metadata
-      
+    
       self.metadata = metadata
       @_r = metadata.registry
-      
+    
       old
     end
-        
+    
+    def initialize_micon_core
+      # quick access to Metadata inner variable.
+      # I intentially broke the Metadata incapsulation to provide better performance, don't refactor it.
+      @_r = {}
+
+      @application, @metadata = {}, Metadata.new(@_r, MSYNC)
+    end
+      
     protected    
+      def autoload key
+        begin
+          load "components/#{key}.rb"
+        rescue LoadError
+          raise_without_self "'#{key}' component not managed!"
+        end
+        scope = MSYNC.synchronize{@_r[key]}
+        raise_without_self "'#{key}' component not managed!" unless scope
+        scope
+      end
+  
       def create_object key, container = nil
         initializer, dependencies = MSYNC.synchronize{@metadata.initializers[key]}
+        raise "no initializer for :#{key} component!" unless initializer
+      
         dependencies.each{|d| Micon[d]}
-        @metadata.call_before key            
-        
+        @metadata.call_before key 
+      
         if container
           unless o = container[key]
             o = initializer.call          
@@ -228,21 +257,22 @@ module Micon
             # end
             # 
             # Micon[:conveyors]            
-                        
+                      
             o = container[key]
           end
         else
           o = initializer.call
         end
-                
+        raise "initializer for component :#{key} returns nill!" unless o
+              
         @metadata.call_after key, o
         o
       end
-    
+  
       def add_prefix scope
         :"mc_#{scope}"
       end
-    
+  
       def remove_prefix scope
         scope.to_s.gsub(/^mc_/, '')
       end
