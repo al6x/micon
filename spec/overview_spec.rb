@@ -1,6 +1,10 @@
 require 'spec_helper'
 
 describe "Micon Overview" do
+  before :each do
+    self.micon = Micon
+  end
+  
   it "sample" do
     class Object
       def app; Micon end

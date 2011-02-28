@@ -1,6 +1,3 @@
-warn 'remove me'
-require 'monitor'
-
 module Micon
   module Core
     protected

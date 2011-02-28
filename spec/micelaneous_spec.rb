@@ -10,16 +10,16 @@ describe "Micelaneous" do
   it "swap_metadata" do
     micon.register :the_object
     micon.metadata[:the_object].should_not be_nil
-    micon.instance_variable_get("@_r").should include(:the_object)
+    micon.instance_variable_get("@registry").should include(:the_object)
     
     old_metadat = micon.swap_metadata
     
     micon.metadata[:the_object].should be_nil
-    micon.instance_variable_get("@_r").should_not include(:the_object)
+    micon.instance_variable_get("@registry").should_not include(:the_object)
     
     micon.swap_metadata old_metadat
     micon.metadata[:the_object].should_not be_nil
-    micon.instance_variable_get("@_r").should include(:the_object)
+    micon.instance_variable_get("@registry").should include(:the_object)
   end  
   
   it "should autoload component definitions if not specified" do

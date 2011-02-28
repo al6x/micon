@@ -68,6 +68,13 @@ Let's suppose you are building the Ruby on Rails clone, there are lots of module
 	RackAdapter.new.call({})
 	
 For actual code go to spec/overview_spec.rb
+
+## Note
+
+Current wersion isn't thread-safe, instead it supported evented IO (EventMachine).
+Actually I implemented first wersion as thread-safe, but because there's no actual multithreading in
+Ruby, the only thing it does - adds complexity and performance losses, so I removed it.
+But if you need it it can be done very easy.
 	
 ## Installation
 

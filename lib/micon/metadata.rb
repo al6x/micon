@@ -5,31 +5,27 @@ module Micon
   class Metadata
     attr_accessor :registry, :initializers, :before, :after
     
-    def initialize registry, sync
-      @registry, @sync = registry, sync
+    def initialize registry
+      @registry = registry
       @before, @after, @before_scope, @after_scope, @initializers = {}, {}, {}, {}, {}
     end
     
     def clear
-      @sync.synchronize do         
-        @registry.clear
-        @initializers.clear
-        @before.clear
-        @after.clear
-        @before_scope.clear
-        @after_scope.clear
-      end
+      @registry.clear
+      @initializers.clear
+      @before.clear
+      @after.clear
+      @before_scope.clear
+      @after_scope.clear
     end
     
     def delete key
-      @sync.synchronize do
-        @registry.delete key
-        @initializers.delete key
-        @before.delete key
-        @after.delete key
-        @before_scope.delete key
-        @after_scope.delete key
-      end
+      @registry.delete key
+      @initializers.delete key
+      @before.delete key
+      @after.delete key
+      @before_scope.delete key
+      @after_scope.delete key
     end
     
     
@@ -37,15 +33,15 @@ module Micon
     # Registry
     # 
     def [] key
-      @sync.synchronize{@registry[key]}
+      @registry[key]
     end
     
     # def []= key, value
-    #   @sync.synchronize{@registry[key] = value}
+    #   @registry[key] = value
     # end
     
     def include? key
-      @sync.synchronize{@registry.include? key}
+      @registry.include? key
     end
     
     
@@ -53,17 +49,13 @@ module Micon
     # Callbacks
     # 
     def register_before key, &block
-      @sync.synchronize do
-        raise "you should provide block!" unless block
-        (@before[key] ||= []) << block
-      end
+      raise "you should provide block!" unless block
+      (@before[key] ||= []) << block
     end
     
     def register_after key, &block
-      @sync.synchronize do
-        raise "you should provide block!" unless block
-        (@after[key] ||= []) << block
-      end
+      raise "you should provide block!" unless block
+      (@after[key] ||= []) << block
     end
     
     def call_before key
@@ -83,17 +75,13 @@ module Micon
     # Scope callbacks
     # 
     def register_before_scope key, &block
-      @sync.synchronize do
-        raise "you should provide block!" unless block
-        (@before_scope[key] ||= []) << block
-      end
+      raise "you should provide block!" unless block
+      (@before_scope[key] ||= []) << block
     end
     
     def register_after_scope key, &block
-      @sync.synchronize do
-        raise "you should provide block!" unless block
-        (@after_scope[key] ||= []) << block
-      end
+      raise "you should provide block!" unless block
+      (@after_scope[key] ||= []) << block
     end
     
     def call_before_scope key, container
@@ -124,7 +112,7 @@ module Micon
     # end
     
     # def deep_clone
-    #   m = Metadata.new @sync
+    #   m = Metadata.new
     #   m.registry = {}
     #   registry.each do |k, v|
     #     m.registry[k] = v
