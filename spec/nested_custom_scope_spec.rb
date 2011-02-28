@@ -1,31 +1,30 @@
 require 'spec_helper'
 
-describe "Micon nested custom scope" do
+describe "Nested custom scope" do
   before :each do
-    Micon.clear
-    Micon.metadata.clear
+    self.micon = MicroContainer.new
   end
   
   it "with block" do
-    Micon.register :value, scope: :custom
+    micon.register :value, scope: :custom
     
     custom_a = {}
-    Micon.activate :custom, custom_a do
-      Micon[:value] = 'value a'
+    micon.activate :custom, custom_a do
+      micon[:value] = 'value a'
       
       custom_b = {}
-      Micon.activate :custom, custom_b do
-        Micon.should_not include(:value)
-        Micon[:value] = 'value b'
-        Micon[:value].should == 'value b'
+      micon.activate :custom, custom_b do
+        micon.should_not include(:value)
+        micon[:value] = 'value b'
+        micon[:value].should == 'value b'
       end
       
-      Micon[:value].should == 'value a'
+      micon[:value].should == 'value a'
     end
   end
   
   it "should not support nested scopes without block" do
-    Micon.activate :custom, {}
-    -> {Micon.activate :custom, {}}.should raise_error(/active/)
+    micon.activate :custom, {}
+    -> {micon.activate :custom, {}}.should raise_error(/active/)
   end
 end

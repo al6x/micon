@@ -4,34 +4,33 @@ describe "Micelaneous" do
   with_load_path "#{spec_dir}/autoload/lib"
   
   before :each do
-    Micon.clear
-    Micon.metadata.clear
+    self.micon = MicroContainer.new
   end
   
   it "swap_metadata" do
-    Micon.register :the_object
-    Micon.metadata[:the_object].should_not be_nil
-    Micon.instance_variable_get("@_r").should include(:the_object)
+    micon.register :the_object
+    micon.metadata[:the_object].should_not be_nil
+    micon.instance_variable_get("@_r").should include(:the_object)
     
-    old_metadat = Micon.swap_metadata
+    old_metadat = micon.swap_metadata
     
-    Micon.metadata[:the_object].should be_nil
-    Micon.instance_variable_get("@_r").should_not include(:the_object)
+    micon.metadata[:the_object].should be_nil
+    micon.instance_variable_get("@_r").should_not include(:the_object)
     
-    Micon.swap_metadata old_metadat
-    Micon.metadata[:the_object].should_not be_nil
-    Micon.instance_variable_get("@_r").should include(:the_object)
+    micon.swap_metadata old_metadat
+    micon.metadata[:the_object].should_not be_nil
+    micon.instance_variable_get("@_r").should include(:the_object)
   end  
   
   it "should autoload component definitions if not specified" do
-    Micon[:router].should == "router"
+    micon[:router].should == "router"
   end
   
   it "dependencies" do        
-    Micon.register(:another_object, depends_on: :the_object){"another_object"}
-    -> {Micon[:another_object]}.should raise_error(/the_object/)
-    Micon.register(:the_object){"the_object"}
-    Micon[:another_object]
+    micon.register(:another_object, depends_on: :the_object){"another_object"}
+    -> {micon[:another_object]}.should raise_error(/the_object/)
+    micon.register(:the_object){"the_object"}
+    micon[:another_object]
   end
   
   it "should not initialize twice (from error)" do
@@ -39,20 +38,20 @@ describe "Micelaneous" do
     check.should_receive(:environment).once.ordered
     check.should_receive(:router).once.ordered
     
-    Micon.register :environment do
+    micon.register :environment do
       check.environment
       'environment'
     end
     
-    Micon.register :router, depends_on: :environment do
+    micon.register :router, depends_on: :environment do
       check.router
       'router'
     end
-    Micon.after :environment do
+    micon.after :environment do
       # some code that needs :router
-      Micon[:router]
+      micon[:router]
     end    
     
-    Micon[:router]
+    micon[:router]
   end  
 end

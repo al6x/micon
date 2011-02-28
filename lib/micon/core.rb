@@ -5,55 +5,66 @@
 # :"custom_name" can't be nested (it will destroy old and start new one) and always should be explicitly started!.
 module Micon
   module Core
+    warn 'use class variables instead of constants'
     SYNC, MSYNC = Monitor.new, Monitor.new    
     
-    def self.extended target      
+    # 
+    # Initialization
+    # It should works with both :extend, and :include, and because of this there's such a complex initialization
+    # 
+    def initialize *a, &b
+      super *a, &b      
+      initialize_micon_core
+    end
+    
+    def self.extended target            
       target.initialize_micon_core
-    end    
+    end
   
+    
     attr_accessor :metadata
   
     #
     # Scope Management
     #
-    def activate scope, container, &block
-      raise_without_self "Only custom scopes can be activated!" if scope == :application or scope == :instance  
+    def activate sname, container, &block
+      raise_without_self "Only custom scopes can be activated!" if sname == :application or sname == :instance  
       raise "container should have type of Hash but has #{container.class.name}" unless container.is_a? Hash
     
-      scope_with_prefix = add_prefix(scope)
-      raise_without_self "Scope '#{remove_prefix(scope)}' already active!" if !block and Thread.current[scope_with_prefix]
+      scope_with_prefix = add_prefix(sname)
+      raise_without_self "Scope '#{remove_prefix(sname)}' already active!" if !block and Thread.current[scope_with_prefix]
     
       if block
         begin
           outer_container_or_nil = Thread.current[scope_with_prefix]
           Thread.current[scope_with_prefix] = container
-          @metadata.with_scope_callbacks scope, container, &block
+          @metadata.with_scope_callbacks sname, container, &block
         ensure
           Thread.current[scope_with_prefix] = outer_container_or_nil
         end
       else        
         # not support nested scopes without block
         Thread.current[scope_with_prefix] = container
-        @metadata.call_before_scope scope, container
+        @metadata.call_before_scope sname, container
       end
     end
   
-    def deactivate scope
-      raise_without_self "Only custom scopes can be deactivated!" if scope == :application or scope == :instance
+    def deactivate sname
+      raise_without_self "Only custom scopes can be deactivated!" if sname == :application or sname == :instance
     
-      scope_with_prefix = add_prefix(scope)      
-      raise_without_self "Scope '#{scope}' not active!" unless container = Thread.current[scope_with_prefix]
+      scope_with_prefix = add_prefix(sname)      
+      raise_without_self "Scope '#{sname}' not active!" unless container = Thread.current[scope_with_prefix]
     
-      @metadata.call_after_scope scope, container
+      @metadata.call_after_scope sname, container
       Thread.current[scope_with_prefix] = nil
       container
     end
   
-    def active? scope
-      if scope == :application or scope == :instance
+    def active? sname
+      if sname == :application or sname == :instance
         true
       else
-        Thread.current.key?(add_prefix(scope))
+        Thread.current.key?(add_prefix(sname))
       end      
     end
   
@@ -77,9 +88,9 @@ module Micon
     # Object Management
     # 
     def include? key
-      scope = MSYNC.synchronize{@_r[key]} || autoload(key)
+      sname = MSYNC.synchronize{@_r[key]} || autoload(key)
     
-      case scope
+      case sname
       when :instance
         true
       when :application
@@ -87,16 +98,16 @@ module Micon
           @application.include? key
         end
       else # custom
-        container = Thread.current[scope]
+        container = Thread.current[sname]
         return false unless container
         container.include? key
       end
     end
   
     def [] key
-      scope = MSYNC.synchronize{@_r[key]} || autoload(key)
+      sname = MSYNC.synchronize{@_r[key]} || autoload(key)
     
-      case scope
+      case sname
       when :instance        
         return create_object(key)
       when :application
@@ -109,8 +120,8 @@ module Micon
           end
         end
       else # custom        
-        container = Thread.current[scope]
-        raise_without_self "Scope '#{remove_prefix(scope)}' not started!" unless container
+        container = Thread.current[sname]
+        raise_without_self "Scope '#{remove_prefix(sname)}' not started!" unless container
         o = container[key]
         unless o
           return create_object(key, container) 
@@ -123,31 +134,31 @@ module Micon
     def []= key, value
       raise "can't assign nill as :#{key} component!" unless value
     
-      scope = MSYNC.synchronize{@_r[key]} || autoload(key)
+      sname = MSYNC.synchronize{@_r[key]} || autoload(key)
     
-      case scope
+      case sname
       when :instance
-        raise_without_self "You can't outject variable with the 'instance' scope!"
+        raise_without_self "You can't outject variable with the 'instance' sname!"
       when :application
         SYNC.synchronize{@application[key] = value}
       else # Custom
-        container = Thread.current[scope]
-        raise_without_self "Scope '#{remove_prefix(scope)}' not started!" unless container
+        container = Thread.current[sname]
+        raise_without_self "Scope '#{remove_prefix(sname)}' not started!" unless container
         container[key] = value
       end
     end  
   
     def delete key
-      scope = MSYNC.synchronize{@_r[key]} || autoload(key)
+      sname = MSYNC.synchronize{@_r[key]} || autoload(key)
     
-      case scope
+      case sname
       when :instance
         raise_without_self "You can't outject variable with the 'instance' scope!"
       when :application
         SYNC.synchronize{@application.delete key}
       else # Custom
-        container = Thread.current[scope]
-        raise_without_self "Scope '#{remove_prefix(scope)}' not started!" unless container
+        container = Thread.current[sname]
+        raise_without_self "Scope '#{remove_prefix(sname)}' not started!" unless container
         container.delete key
       end
     end  
@@ -160,8 +171,8 @@ module Micon
       raise "key should not be nil or false value!" unless key
       options = options.symbolize_keys      
     
-      scope = options.delete(:scope) || :application
-      scope = Micon.add_prefix(scope) unless scope == :application or scope == :instance
+      sname = options.delete(:scope) || :application
+      sname = add_prefix(sname) unless sname == :application or sname == :instance
       dependencies = Array(options.delete(:require) || options.delete(:depends_on))
     
       options.each{|key| raise "Unknown option :#{key}!"}
@@ -170,7 +181,7 @@ module Micon
         unless @_r.object_id == @metadata.registry.object_id
           raise "internal error, reference to registry aren't equal to actual registry!" 
         end
-        @metadata.registry[key] = scope
+        @metadata.registry[key] = sname
         @metadata.initializers[key] = [initializer, dependencies]
       end
     end
@@ -187,12 +198,12 @@ module Micon
       @metadata.register_after component, &block
     end
   
-    def before_scope scope, &block
-      @metadata.register_before_scope scope, &block
+    def before_scope sname, &block
+      @metadata.register_before_scope sname, &block
     end
   
-    def after_scope scope, &block
-      @metadata.register_after_scope scope, &block
+    def after_scope sname, &block
+      @metadata.register_after_scope sname, &block
     end
   
     # handy method, usually for test purposes
@@ -221,16 +232,16 @@ module Micon
         rescue LoadError
           raise_without_self "'#{key}' component not managed!"
         end
-        scope = MSYNC.synchronize{@_r[key]}
-        raise_without_self "'#{key}' component not managed!" unless scope
-        scope
+        sname = MSYNC.synchronize{@_r[key]}
+        raise_without_self "'#{key}' component not managed!" unless sname
+        sname
       end
   
       def create_object key, container = nil
         initializer, dependencies = MSYNC.synchronize{@metadata.initializers[key]}
         raise "no initializer for :#{key} component!" unless initializer
       
-        dependencies.each{|d| Micon[d]}
+        dependencies.each{|d| self[d]}
         @metadata.call_before key 
       
         if container
@@ -242,21 +253,21 @@ module Micon
             # initialized in dependecies or callbacks
             # here's the sample case:
             # 
-            # Micon.register :environment, :application do
+            # app.register :environment, :application do
             #   p :environment
             #   'environment'
             # end
             # 
-            # Micon.register :conveyors, :application, depends_on: :environment do
+            # app.register :conveyors, :application, depends_on: :environment do
             #   p :conveyors
             #   'conveyors'
             # end
             # 
-            # Micon.after :environment do
-            #   Micon[:conveyors]
+            # app.after :environment do
+            #   app[:conveyors]
             # end
             # 
-            # Micon[:conveyors]            
+            # app[:conveyors]            
                       
             o = container[key]
           end
@@ -269,12 +280,12 @@ module Micon
         o
       end
   
-      def add_prefix scope
-        :"mc_#{scope}"
+      def add_prefix sname
+        :"mc_#{sname}"
       end
   
-      def remove_prefix scope
-        scope.to_s.gsub(/^mc_/, '')
+      def remove_prefix sname
+        sname.to_s.gsub(/^mc_/, '')
       end
   end
 end

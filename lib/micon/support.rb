@@ -1,8 +1,12 @@
+warn 'remove me'
 require 'monitor'
 
 module Micon
-  def self.raise_without_self message
-    raise RuntimeError, message, caller.select{|path| path !~ /\/lib\/micon\//}
+  module Core
+    protected
+      def raise_without_self message
+        raise RuntimeError, message, caller.select{|path| path !~ /\/lib\/micon\//}
+      end
   end
 end
 

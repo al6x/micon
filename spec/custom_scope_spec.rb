@@ -1,49 +1,48 @@
 require 'spec_helper'
 
-describe "Micon custom scope" do
+describe "@m custom scope" do
   before :each do
-    Micon.clear
-    Micon.metadata.clear
+    self.micon = MicroContainer.new
   end
   
   it "activate" do
     container = {}    
-    Micon.should_not be_active(:custom)
-    Micon.activate :custom, container
-    Micon.should be_active(:custom)
+    micon.should_not be_active(:custom)
+    micon.activate :custom, container
+    micon.should be_active(:custom)
 
-    -> {Micon.activate :custom, container}.should raise_error(/active/)
+    -> {micon.activate :custom, container}.should raise_error(/active/)
 
-    Micon.deactivate :custom
-    -> {Micon.deactivate :custom}.should raise_error(/not active/)
+    micon.deactivate :custom
+    -> {micon.deactivate :custom}.should raise_error(/not active/)
     
-    Micon.should_not be_active(:custom)
-    Micon.activate :custom, container do
-      Micon.should be_active(:custom)
+    micon.should_not be_active(:custom)
+    micon.activate :custom, container do
+      micon.should be_active(:custom)
     end
   end
   
   it "check" do
-    Micon.register(:value, scope: :custom){"The Object"}
-    -> {Micon[:value]}.should raise_error(/not started/)
-    -> {Micon[:value] = 'value'}.should raise_error(/not started/)
+    micon.register(:value, scope: :custom){"The Object"}
+    -> {micon[:value]}.should raise_error(/not started/)
+    -> {micon[:value] = 'value'}.should raise_error(/not started/)
   end
   
   it "get" do
-    Micon.register(:value, scope: :custom){"The Object"}
+    micon.register(:value, scope: :custom){"The Object"}
     container, the_object = {}, nil
     
-    Micon.activate :custom, container do
-      Micon[:value].should == "The Object"
-      the_object = Micon[:value]
+    micon.activate :custom, container do
+      micon[:value].should == "The Object"
+      the_object = micon[:value]
     end
     
-    Micon.activate :custom, {} do
-      Micon[:value].object_id.should_not == the_object.object_id
+    micon.activate :custom, {} do
+      micon[:value].object_id.should_not == the_object.object_id
     end
     
-    Micon.activate :custom, container do
-      Micon[:value].object_id.should == the_object.object_id
+    micon.activate :custom, container do
+      micon[:value].object_id.should == the_object.object_id
     end
     
     container.size.should == 1
@@ -51,25 +50,25 @@ describe "Micon custom scope" do
   end
   
   it "set" do
-    Micon.register(:value, scope: :custom){"The Object"}
+    micon.register(:value, scope: :custom){"The Object"}
     container = {}
     
-    Micon.activate :custom, container do
-      Micon[:value].should == "The Object"
-      Micon[:value] = "Another Object"
-      the_object = Micon[:value]
+    micon.activate :custom, container do
+      micon[:value].should == "The Object"
+      micon[:value] = "Another Object"
+      the_object = micon[:value]
     end
     
-    Micon.activate :custom, {} do
-      Micon[:value].should == "The Object"
+    micon.activate :custom, {} do
+      micon[:value].should == "The Object"
     end
     
-    Micon.activate :custom, container do
-      Micon[:value].should == "Another Object"
+    micon.activate :custom, container do
+      micon[:value].should == "Another Object"
     end
   end
   
   it "scope should return block value (from error)" do
-    Micon.activate(:custom, {}){'value'}.should == 'value'
+    micon.activate(:custom, {}){'value'}.should == 'value'
   end
 end

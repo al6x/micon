@@ -1,9 +1,9 @@
 class Module  
   # inject attribute: :session
   def inject attributes
-    Micon.raise_without_self "Invalid argument!" unless attributes.is_a? Hash
+    ::MICON.raise_without_self "Invalid argument!" unless attributes.is_a? Hash
     attributes.each do |name, specificator|
-      Micon.raise_without_self "Attribute name should be a Symbol!" unless name.is_a? Symbol        
+      ::MICON.raise_without_self "Attribute name should be a Symbol!" unless name.is_a? Symbol        
   
       if [Class, Module].include? specificator.class
         specificator = specificator.name
@@ -15,15 +15,15 @@ class Module
 
       script = <<-RUBY
 def #{name}
-  ::Micon[#{specificator}]
+  ::MICON[#{specificator}]
 end
 
 def #{name}= value
-  ::Micon[#{specificator}] = value
+  ::MICON[#{specificator}] = value
 end
 
 def #{name}?
-  ::Micon.include? #{specificator}
+  ::MICON.include? #{specificator}
 end
       RUBY
       

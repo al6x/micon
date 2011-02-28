@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe "Micon Managed" do
+describe "Managed" do
   before :all do
-    Micon.metadata.clear
+    self.micon = MicroContainer.new
     
     class ManagedObject      
       register_as :managed_object
@@ -15,19 +15,19 @@ describe "Micon Managed" do
   end
   
   before :each do
-    Micon.clear
+    micon.clear
   end
 
   it "scope" do
-    scope = Micon.metadata[:managed_object]
-    initializer, dependencies = Micon.metadata.initializers[:managed_object]
+    scope = micon.metadata[:managed_object]
+    initializer, dependencies = micon.metadata.initializers[:managed_object]
     scope.should == :application
     initializer.call.should be_a(ManagedObject)
   end
 
   it "injection" do
     the_object = "The Object"
-    Micon.register(:object_key){the_object}
+    micon.register(:object_key){the_object}
 
     ManagedObject.object.should == the_object
     o = ManagedObject.new
@@ -36,7 +36,7 @@ describe "Micon Managed" do
   
   it "outjection" do
     the_object = "The Object"
-    Micon.register(:object_key)
+    micon.register(:object_key)
 
     -> {ManagedObject.object}.should raise_error(/no initializer/)
     ManagedObject.object = the_object
@@ -44,8 +44,8 @@ describe "Micon Managed" do
   end
   
   it "empty?" do
-    Micon.should be_empty
-    Micon[:managed_object]
-    Micon.should_not be_empty
+    micon.should be_empty
+    micon[:managed_object]
+    micon.should_not be_empty
   end
 end

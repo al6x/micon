@@ -1,3 +1,3 @@
-Micon.register :router do
+micon.register :router do
   "router"
 end
