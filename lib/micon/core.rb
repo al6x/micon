@@ -5,20 +5,6 @@
 # :"custom_name" can't be nested (it will destroy old and start new one) and always should be explicitly started!.
 module Micon
   module Core
-    # 
-    # Initialization
-    # It should works with both :extend, and :include, and because of this there's such a complex initialization
-    # 
-    def initialize *a, &b
-      super *a, &b      
-      _initialize_micon_core
-    end
-    
-    def self.extended target            
-      target._initialize_micon_core
-    end
-  
-    
     #
     # Scope Management
     #
@@ -81,7 +67,7 @@ module Micon
     # Object Management
     # 
     def include? key
-      sname = @registry[key] || autoload(key)
+      sname = @registry[key]
     
       case sname
       when :instance
@@ -96,7 +82,7 @@ module Micon
     end
   
     def [] key
-      sname = @registry[key] || autoload(key)
+      sname = @registry[key] || autoload_component_definition(key)
     
       case sname
       when :instance        
@@ -119,11 +105,71 @@ module Micon
         end
       end
     end
+    
+    def get_constant_component key      
+      sname = @registry[key] || autoload_component_definition(key, false)
+      
+      case sname
+      when nil
+        nil        
+      when :instance        
+        must_be.never_called
+      when :application        
+        return nil unless @constants.include? key
+        
+        o = @application[key]          
+        unless o
+          return create_object(key, @application)
+        else
+          return o
+        end
+      else # custom        
+        must_be.never_called
+      end
+    end
+    
+    def get_constant namespace, const
+      original_namespace = namespace
+      namespace = nil if namespace == Object or namespace == Module
+      target_namespace = namespace
+    
+      # Name hack (for anonymous classes)
+      namespace = eval "#{name_hack(namespace)}" if namespace
+    
+      class_name = namespace ? "#{namespace.name}::#{const}" : const
+
+      simple_also_tried = false
+      begin
+        simple_also_tried = (namespace == nil)
+
+        if result = get_constant_component(class_name.to_sym)
+          if @loaded_classes.include?(class_name)
+            raise_without_self "something wrong is goin on, constant '#{const}' in '#{original_namespace}' namespace already has been defined!"
+          end
+        
+          real_namespace = namespace ? namespace : Object
+          if real_namespace.const_defined?(const)
+            raise_without_self "component trying to redefine constant '#{const}' that already defined in '#{real_namespace}'!"
+          end
+          
+          real_namespace.const_set const, result
+      
+          @loaded_classes[class_name] = [real_namespace, const]
+
+          return result
+        elsif namespace
+          namespace = Module.namespace_for(namespace.name)
+          class_name = namespace ? "#{namespace.name}::#{const}" : const
+        end
+      end until simple_also_tried
+      
+      return nil
+    end
   
     def []= key, value
       raise "can't assign nill as :#{key} component!" unless value
     
-      sname = @registry[key] || autoload(key)
+      sname = @registry[key] || autoload_component_definition(key)
     
       case sname
       when :instance
@@ -138,7 +184,7 @@ module Micon
     end  
   
     def delete key
-      sname = @registry[key] || autoload(key)
+      sname = @registry[key] || autoload_component_definition(key)
     
       case sname
       when :instance
@@ -164,18 +210,25 @@ module Micon
     
       sname = options.delete(:scope) || :application
       dependencies = Array(options.delete(:require) || options.delete(:depends_on))
+      constant = options.delete(:constant) || false
     
-      options.each{|key| raise "Unknown option :#{key}!"}
+      raise "unknown options :#{options.keys.join(', :')}!" unless options.empty?
     
       unless @registry.object_id == @metadata.registry.object_id
         raise "internal error, reference to registry aren't equal to actual registry!" 
       end
       @metadata.registry[key] = sname
-      @metadata.initializers[key] = [initializer, dependencies]
+      @metadata.initializers[key] = [initializer, dependencies, constant]
+      if constant
+        raise "component '#{key}' defined as constant must be a symbol!" unless key.is_a? Symbol
+        raise "component '#{key}' defined as constant can have only :application scope!" unless sname == :application
+        @constants[key] = true
+      end
     end
   
     def unregister key
       @metadata.delete key
+      @constants.delete key
     end
   
     def before component, &block
@@ -193,36 +246,56 @@ module Micon
     def after_scope sname, &block
       @metadata.register_after_scope sname, &block
     end
-  
-    # handy method, usually for test purposes
-    def swap_metadata metadata = nil
-      metadata ||= Metadata.new({})
-      old = self.metadata
+          
+    def clone
+      another = super
+      %w(@constants @loaded_classes @metadata @application @custom_scopes).each do |name|
+        value = instance_variable_get name
+        another.instance_variable_set name, value.clone
+      end
+      another.instance_variable_set '@registry', another.metadata.registry
+      another.instance_variable_set '@initialized', another.instance_variable_get('@initialized')
+      another     
+    end
+    alias_method :deep_clone, :clone
     
-      self.metadata = metadata
-      @registry = metadata.registry
-    
-      old
+    def initialize!    
+      unless @initialized
+        # quick access to Metadata inner variable.
+        # I intentially broke the Metadata incapsulation to provide better performance, don't refactor it.
+        @registry, @constants, @loaded_classes = {}, {}, {}
+        @metadata = Metadata.new(@registry)
+      
+        @application, @custom_scopes = {}, {}
+        
+        @initialized = true
+      end
+      
+      # Micon::Core is independent itself and there can be multiple Cores simultaneously. 
+      # But some of it's extensions can work only with one global instance, and them need to know how to get it, 
+      # the MICON constant references this global instance.
+      Object.send(:remove_const, :MICON) if Object.const_defined?(:MICON)
+      Object.const_set :MICON, self      
     end
     
-    def _initialize_micon_core
-      # quick access to Metadata inner variable.
-      # I intentially broke the Metadata incapsulation to provide better performance, don't refactor it.
-      @registry = {}
-      @metadata = Metadata.new(@registry)
+    def deinitialize!
+      Object.send(:remove_const, :MICON) if Object.const_defined?(:MICON)
       
-      @application, @custom_scopes = {}, {}
+      @loaded_classes.each do |class_name, tuple|
+        namespace, const = tuple
+        namespace.send(:remove_const, const)
+      end
+      @loaded_classes.clear
     end
       
     protected    
-      def autoload key
+      def autoload_component_definition key, bang = true
         begin
-          load "components/#{key}.rb"
+          load "components/#{key.to_s.gsub(/::/, '/')}.rb"
         rescue LoadError
-          raise_without_self "'#{key}' component not managed!"
         end
         sname = @registry[key]
-        raise_without_self "'#{key}' component not managed!" unless sname
+        raise_without_self "'#{key}' component not managed!" if bang and !sname
         sname
       end
   
@@ -268,5 +341,38 @@ module Micon
         @metadata.call_after key, o
         o
       end  
+      
+      def name_hack namespace
+        if namespace
+          namespace.to_s.gsub("#<Class:", "").gsub(">", "")
+        else
+          ""
+        end
+        # Namespace Hack description
+        # Module.name doesn't works correctly for Anonymous classes.
+        # try to execute this code:
+        #
+        #class Module
+        #  def const_missing const
+        #    p self.to_s
+        #  end
+        #end
+        #
+        #class A
+        #    class << self
+        #        def a
+        #            p self
+        #            MissingConst
+        #        end
+        #    end
+        #end
+        #
+        #A.a
+        #
+        # the output will be:
+        # A
+        # "#<Class:A>"
+        #
+      end
   end
 end

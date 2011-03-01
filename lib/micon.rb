@@ -3,6 +3,7 @@
   
   metadata
   core
+  helper
   
   module
   class

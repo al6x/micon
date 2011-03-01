@@ -28,6 +28,16 @@ module Micon
       @after_scope.delete key
     end
     
+    def clone
+      another = super
+      %w(@registry @before @after @before_scope @after_scope @initializers).each do |name|
+        value = instance_variable_get name
+        another.instance_variable_set name, value.clone
+      end
+      another
+    end
+    alias_method :deep_clone, :clone
+    
     
     # 
     # Registry

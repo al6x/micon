@@ -5,6 +5,13 @@ describe "Application and Instance scopes" do
     self.micon = MicroContainer.new
   end
   
+  it "dependencies" do        
+    micon.register(:another_object, depends_on: :the_object){"another_object"}
+    -> {micon[:another_object]}.should raise_error(/the_object/)
+    micon.register(:the_object){"the_object"}
+    micon[:another_object]
+  end
+  
   it "instance scope" do    
     micon.register(:value, scope: :instance){"The Object"}
     

@@ -10,19 +10,24 @@ describe "Callbacks" do
       micon.register(:the_object){"The Object"}
     
       check = mock
-      check.should_receive(:done)
+      check.should_receive(:before)
       micon.before :the_object do
-        check.done
+        check.before
       end
     
-      micon.after :the_object do |o|
-        o << " updated"
+      check.should_receive(:after1).ordered
+      check.should_receive(:after2).ordered
+      obj = nil
+      micon.after :the_object do |o|        
+        check.after1
+        obj = o
       end
       micon.after :the_object do |o|
-        o << " even more updated"
+        check.after2
+        obj.object_id.should == o.object_id
       end
-    
-      micon[:the_object].should == "The Object updated even more updated"
+      
+      micon[:the_object].should == obj
     end
   
     it "should be able reference to the component itself inside of after filter (cycle reference)" do

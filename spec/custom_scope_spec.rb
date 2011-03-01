@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "@m custom scope" do
+describe "Custom Scope" do
   before :each do
     self.micon = MicroContainer.new
   end
