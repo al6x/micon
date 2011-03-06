@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe "Callbacks" do
   before :each do
-    self.micon = MicroContainer.new
+    self.micon = Micon::Core.new
   end
   
   describe "components callbacs" do
@@ -55,5 +55,34 @@ describe "Callbacks" do
 
       micon.activate(:custom, {}){check.run}
     end    
-  end  
+  end 
+  
+  describe "micelaneous" do
+    it "should raise error if callback defined after component already created" do
+      micon.register(:the_object){"the_object"}
+      micon[:the_object]
+      
+      -> {micon.before(:the_object){}}.should raise_error(/already created/)
+      -> {micon.after(:the_object){}}.should raise_error(/already created/)
+    end
+    
+    it "should raise error if callback defined after scope already started" do
+      micon.activate :custom, {} do
+        -> {micon.before_scope(:custom){}}.should raise_error(/already started/)
+        -> {micon.after_scope(:custom){}}.should raise_error(/already started/)
+      end
+    end
+    
+    it ":after with bang: false should execute callback if component already started and also register it as :after callback" do
+      micon.register(:the_object){"the_object"}
+      micon[:the_object]
+      
+      check = mock
+      check.should_receive(:first).twice      
+      micon.after(:the_object, bang: false){check.first}
+      
+      micon.delete :the_object
+      micon[:the_object]
+    end
+  end 
 end

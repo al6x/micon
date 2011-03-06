@@ -6,7 +6,7 @@ describe "Initialization" do
   end
   
   it "clone" do
-    m = MicroContainer.new
+    m = Micon::Core.new
     m.initialize!
     
     m.register(:the_value){'the_value'}
@@ -19,7 +19,7 @@ describe "Initialization" do
   end
   
   it "initialize! should set caller as global, deinitialize! should remove it" do
-    m = MicroContainer.new
+    m = Micon::Core.new
     m.initialize!
 
     ::MICON.object_id.should == m.object_id
@@ -28,7 +28,7 @@ describe "Initialization" do
   end
   
   it "should support isolation" do
-    m1 = MicroContainer.new
+    m1 = Micon::Core.new
     m1.initialize!
     
     m1.register(:first){'first'}
@@ -53,19 +53,19 @@ describe "Initialization" do
     m1.should_not include(:second)    
   end
   
-  describe "constants" do
-    it "deinitialize! should delete all defined constants" do
-      m = MicroContainer.new
-      m.initialize!
-      
-      m.register(:TheRouter, constant: true){'TheRouter'}
-      ::TheRouter.should == 'TheRouter'
-      
-      m.deinitialize!
-      Object.const_defined?(:TheRouter).should be_false
-      
-      m.initialize!
-      ::TheRouter.should == 'TheRouter'
-    end
-  end
+  # describe "constants" do
+  #   it "deinitialize! should delete all defined constants" do
+  #     m = Micon::Core.new
+  #     m.initialize!
+  #     
+  #     m.register(:TheRouter, constant: true){'TheRouter'}
+  #     ::TheRouter.should == 'TheRouter'
+  #     
+  #     m.deinitialize!
+  #     Object.const_defined?(:TheRouter).should be_false
+  #     
+  #     m.initialize!
+  #     ::TheRouter.should == 'TheRouter'
+  #   end
+  # end
 end

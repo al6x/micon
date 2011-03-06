@@ -4,7 +4,7 @@ describe "Micelaneous" do
   with_load_path "#{spec_dir}/autoload/lib"    
   
   before :each do
-    self.micon = MicroContainer.new
+    self.micon = Micon::Core.new
   end
   
   after :each do
@@ -16,11 +16,11 @@ describe "Micelaneous" do
       micon[:some_value].should == "some_value"
     end
   
-    it 'should autoload component - constants (and nested constants)' do      
-      TheRouter.should == "TheRouter"
-      module ::TheRad; end
-      TheRad::TheView.should == "TheView"
-    end
+    # it 'should autoload component - constants (and nested constants)' do      
+    #   TheRouter.should == "TheRouter"
+    #   module ::TheRad; end
+    #   TheRad::TheView.should == "TheView"
+    # end
   end
 
   it "should not initialize twice (from error)" do

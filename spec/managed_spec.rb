@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe "Managed" do
   before :all do
-    self.micon = MicroContainer.new
+    self.micon = Micon::Core.new
     
     class ManagedObject      
       register_as :managed_object

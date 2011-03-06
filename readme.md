@@ -1,4 +1,4 @@
-# Assembles and manages pieces of your application
+# Assembles and manages pieces of Your Application
 
 Micon is infrastructural component, invisible to user and it's main goal is to simplify development. It reduces complex monolithic application to set of simple low coupled components. 
 

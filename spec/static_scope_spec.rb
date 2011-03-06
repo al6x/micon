@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe "Application and Instance scopes" do  
   before :each do
-    self.micon = MicroContainer.new
+    self.micon = Micon::Core.new
   end
   
   it "dependencies" do        

@@ -4,7 +4,7 @@
 # 
 # :"custom_name" can't be nested (it will destroy old and start new one) and always should be explicitly started!.
 module Micon
-  module Core
+  class Core
     #
     # Scope Management
     #
@@ -106,65 +106,65 @@ module Micon
       end
     end
     
-    def get_constant_component key      
-      sname = @registry[key] || autoload_component_definition(key, false)
-      
-      case sname
-      when nil
-        nil        
-      when :instance        
-        must_be.never_called
-      when :application        
-        return nil unless @constants.include? key
-        
-        o = @application[key]          
-        unless o
-          return create_object(key, @application)
-        else
-          return o
-        end
-      else # custom        
-        must_be.never_called
-      end
-    end
-    
-    def get_constant namespace, const
-      original_namespace = namespace
-      namespace = nil if namespace == Object or namespace == Module
-      target_namespace = namespace
-    
-      # Name hack (for anonymous classes)
-      namespace = eval "#{name_hack(namespace)}" if namespace
-    
-      class_name = namespace ? "#{namespace.name}::#{const}" : const
-
-      simple_also_tried = false
-      begin
-        simple_also_tried = (namespace == nil)
-
-        if result = get_constant_component(class_name.to_sym)
-          if @loaded_classes.include?(class_name)
-            raise_without_self "something wrong is goin on, constant '#{const}' in '#{original_namespace}' namespace already has been defined!"
-          end
-        
-          real_namespace = namespace ? namespace : Object
-          if real_namespace.const_defined?(const)
-            raise_without_self "component trying to redefine constant '#{const}' that already defined in '#{real_namespace}'!"
-          end
-          
-          real_namespace.const_set const, result
-      
-          @loaded_classes[class_name] = [real_namespace, const]
-
-          return result
-        elsif namespace
-          namespace = Module.namespace_for(namespace.name)
-          class_name = namespace ? "#{namespace.name}::#{const}" : const
-        end
-      end until simple_also_tried
-      
-      return nil
-    end
+    # def get_constant_component key      
+    #   sname = @registry[key] || autoload_component_definition(key, false)
+    #   
+    #   case sname
+    #   when nil
+    #     nil        
+    #   when :instance        
+    #     must_be.never_called
+    #   when :application        
+    #     return nil unless @constants.include? key
+    #     
+    #     o = @application[key]          
+    #     unless o
+    #       return create_object(key, @application)
+    #     else
+    #       return o
+    #     end
+    #   else # custom        
+    #     must_be.never_called
+    #   end
+    # end
+    # 
+    # def get_constant namespace, const
+    #   original_namespace = namespace
+    #   namespace = nil if namespace == Object or namespace == Module
+    #   target_namespace = namespace
+    # 
+    #   # Name hack (for anonymous classes)
+    #   namespace = eval "#{name_hack(namespace)}" if namespace
+    # 
+    #   class_name = namespace ? "#{namespace.name}::#{const}" : const
+    # 
+    #   simple_also_tried = false
+    #   begin
+    #     simple_also_tried = (namespace == nil)
+    # 
+    #     if result = get_constant_component(class_name.to_sym)
+    #       if @loaded_classes.include?(class_name)
+    #         raise_without_self "something wrong is goin on, constant '#{const}' in '#{original_namespace}' namespace already has been defined!"
+    #       end
+    #     
+    #       real_namespace = namespace ? namespace : Object
+    #       if real_namespace.const_defined?(const)
+    #         raise_without_self "component trying to redefine constant '#{const}' that already defined in '#{real_namespace}'!"
+    #       end
+    #       
+    #       real_namespace.const_set const, result
+    #   
+    #       @loaded_classes[class_name] = [real_namespace, const]
+    # 
+    #       return result
+    #     elsif namespace
+    #       namespace = Module.namespace_for(namespace.name)
+    #       class_name = namespace ? "#{namespace.name}::#{const}" : const
+    #     end
+    #   end until simple_also_tried
+    #   
+    #   return nil
+    # end
   
     def []= key, value
       raise "can't assign nill as :#{key} component!" unless value
@@ -210,7 +210,7 @@ module Micon
     
       sname = options.delete(:scope) || :application
       dependencies = Array(options.delete(:require) || options.delete(:depends_on))
-      constant = options.delete(:constant) || false
+      # constant = options.delete(:constant) || false
     
       raise "unknown options :#{options.keys.join(', :')}!" unless options.empty?
     
@@ -218,38 +218,54 @@ module Micon
         raise "internal error, reference to registry aren't equal to actual registry!" 
       end
       @metadata.registry[key] = sname
-      @metadata.initializers[key] = [initializer, dependencies, constant]
-      if constant
-        raise "component '#{key}' defined as constant must be a symbol!" unless key.is_a? Symbol
-        raise "component '#{key}' defined as constant can have only :application scope!" unless sname == :application
-        @constants[key] = true
-      end
+      @metadata.initializers[key] = [initializer, dependencies] #, constant]
+      # if constant
+      #   raise "component '#{key}' defined as constant must be a symbol!" unless key.is_a? Symbol
+      #   raise "component '#{key}' defined as constant can have only :application scope!" unless sname == :application
+      #   @constants[key] = true
+      # end
     end
   
     def unregister key
       @metadata.delete key
-      @constants.delete key
+      # @constants.delete key
     end
   
-    def before component, &block
+    def before component, options = {}, &block
+      options[:bang] = true unless options.include? :bang
+      raise_without_self "component :#{component} already created!" if options[:bang] and include?(component)
       @metadata.register_before component, &block
     end
   
-    def after component, &block
+    def after component, options = {}, &block
+      options[:bang] = true unless options.include? :bang
+      if include? component
+        if options[:bang]
+          raise_without_self "component :#{component} already created!"
+        else
+          block.call self[component]
+        end
+      end      
       @metadata.register_after component, &block
     end
   
-    def before_scope sname, &block
+    def before_scope sname, options = {}, &block    
+      options[:bang] = true unless options.include? :bang
+      raise_without_self "scope :#{sname} already started!" if options[:bang] and active?(sname)
       @metadata.register_before_scope sname, &block
     end
   
-    def after_scope sname, &block
+    def after_scope sname, options = {}, &block
+      options[:bang] = true unless options.include? :bang
+      raise_without_self "scope :#{sname} already started!" if options[:bang] and active?(sname)
       @metadata.register_after_scope sname, &block
     end
+    
+    
           
     def clone
       another = super
-      %w(@constants @loaded_classes @metadata @application @custom_scopes).each do |name|
+      %w(@metadata @application @custom_scopes).each do |name| # @loaded_classes, @constants
         value = instance_variable_get name
         another.instance_variable_set name, value.clone
       end
@@ -263,7 +279,7 @@ module Micon
       unless @initialized
         # quick access to Metadata inner variable.
         # I intentially broke the Metadata incapsulation to provide better performance, don't refactor it.
-        @registry, @constants, @loaded_classes = {}, {}, {}
+        @registry = {} # @loaded_classes, @constants = {}, {}
         @metadata = Metadata.new(@registry)
       
         @application, @custom_scopes = {}, {}
@@ -281,11 +297,11 @@ module Micon
     def deinitialize!
       Object.send(:remove_const, :MICON) if Object.const_defined?(:MICON)
       
-      @loaded_classes.each do |class_name, tuple|
-        namespace, const = tuple
-        namespace.send(:remove_const, const)
-      end
-      @loaded_classes.clear
+      # @loaded_classes.each do |class_name, tuple|
+      #   namespace, const = tuple
+      #   namespace.send(:remove_const, const)
+      # end
+      # @loaded_classes.clear
     end
       
     protected    

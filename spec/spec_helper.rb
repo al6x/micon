@@ -2,9 +2,10 @@ require 'rspec_ext'
 
 require "micon"
 
-class MicroContainer
-  include Micon::Core
-  include Micon::Helper
+module Micon
+  class Core
+    include Helper
+  end
 end
 
 def micon; $micon end

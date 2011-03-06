@@ -2,12 +2,12 @@ require 'spec_helper'
 
 describe "Micon Overview" do
   before :each do
-    self.micon = Micon
+    self.micon = Micon::Core.new
   end
   
   it "sample" do
     class Object
-      def app; Micon end
+      def app; MICON end
     end
     
   	# static (singleton) components

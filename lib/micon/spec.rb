@@ -1,18 +1,20 @@
 require 'rspec_ext'
 
 rspec do
-  def self.with_micon scope = :all
-    old_metadata = nil
+  def self.with_micon options = {}
+    scope = options[:before] || :all
+    
+    old, tmp = nil
     
     before scope do      
-      old_metadata = MICON.metadata
-      MICON.swap_metadata old_metadata.deep_clone
-      MICON.clear
+      old = MICON
+      tmp = old.clone
+      tmp.initialize!
     end
     
     after scope do
-      MICON.clear
-      MICON.swap_metadata old_metadata
+      tmp.deinitialize!
+      old.initialize!
     end
   end
 end

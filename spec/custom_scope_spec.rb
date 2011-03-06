@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe "Custom Scope" do
   before :each do
-    self.micon = MicroContainer.new
+    self.micon = Micon::Core.new
   end
   
   it "activate" do

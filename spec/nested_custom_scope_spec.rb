@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe "Nested custom scope" do
   before :each do
-    self.micon = MicroContainer.new
+    self.micon = Micon::Core.new
   end
   
   it "with block" do
