@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "Nested custom scope" do
-  before :each do
+  before do
     self.micon = Micon::Core.new
   end
   

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "Callbacks" do
-  before :each do
+  before do
     self.micon = Micon::Core.new
   end
   
@@ -58,6 +58,16 @@ describe "Callbacks" do
   end 
   
   describe "micelaneous" do
+    it "should fire callbacks after assigning component" do
+      micon.register(:the_object)
+      check = mock
+      check.should_receive(:done)
+      micon.after :the_object do
+        check.done
+      end
+      micon.the_object = 'the_object'
+    end
+    
     it "should raise error if callback defined after component already created" do
       micon.register(:the_object){"the_object"}
       micon[:the_object]

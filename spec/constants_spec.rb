@@ -3,11 +3,11 @@
 # describe "Autoloading" do
 #   with_load_path "#{spec_dir}/get_constant_component/lib"
 #   
-#   before :each do
+#   before do
 #     self.micon = Micon::Core.new
 #   end
 # 
-#   after :each do
+#   after do
 #     remove_constants :TheRouter, :TheRad, :TheController, :SomeModule
 #   end
 #   

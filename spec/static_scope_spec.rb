@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "Application and Instance scopes" do  
-  before :each do
+  before do
     self.micon = Micon::Core.new
   end
   

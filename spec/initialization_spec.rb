@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "Initialization" do  
-  after :each do
+  after do
     remove_constants :TheRouter
   end
   

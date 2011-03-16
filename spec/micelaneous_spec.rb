@@ -3,11 +3,11 @@ require 'spec_helper'
 describe "Micelaneous" do
   with_load_path "#{spec_dir}/autoload/lib"    
   
-  before :each do
+  before do
     self.micon = Micon::Core.new
   end
   
-  after :each do
+  after do
     remove_constants :TheRouter, :TheRad
   end
   

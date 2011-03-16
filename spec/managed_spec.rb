@@ -14,7 +14,7 @@ describe "Managed" do
     end
   end
   
-  before :each do
+  before do
     micon.clear
   end
 

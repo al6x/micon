@@ -70,6 +70,8 @@ module Micon
       sname = @registry[key]
     
       case sname
+      when nil
+        false
       when :instance
         true
       when :application
@@ -171,7 +173,7 @@ module Micon
     
       sname = @registry[key] || autoload_component_definition(key)
     
-      case sname
+      value = case sname
       when :instance
         raise_without_self "You can't outject variable with the 'instance' sname!"
       when :application
@@ -181,23 +183,37 @@ module Micon
         raise_without_self "Scope '#{sname}' not started!" unless container
         container[key] = value
       end
+      
+      @metadata.call_after key, value
+      
+      value
     end  
   
     def delete key
-      sname = @registry[key] || autoload_component_definition(key)
+      sname = @registry[key] # || autoload_component_definition(key)
     
       case sname
+      when nil
       when :instance
         raise_without_self "You can't outject variable with the 'instance' scope!"
       when :application
         @application.delete key
       else # Custom
         container = @custom_scopes[sname]
-        raise_without_self "Scope '#{sname}' not started!" unless container
-        container.delete key
+        # raise_without_self "Scope '#{sname}' not started!" unless container
+        container.delete key if container
       end
     end  
+    
+    def delete_all key
+      metadata.delete key
+      delete key
+    end
   
+    def reset key
+      delete key
+      self[key]
+    end
   
     # 
     # Metadata
@@ -315,7 +331,7 @@ module Micon
         sname
       end
   
-      def create_object key, container = nil
+      def create_object key, container = nil        
         initializer, dependencies = @metadata.initializers[key]
         raise "no initializer for :#{key} component!" unless initializer
       
@@ -323,8 +339,8 @@ module Micon
         @metadata.call_before key 
       
         if container
-          unless o = container[key]
-            o = initializer.call          
+          unless o = container[key]            
+            o = initializer.call                      
             container[key] = o 
           else
             # complex case, there's an circular dependency, and the 'o' already has been 

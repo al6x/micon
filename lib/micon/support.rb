@@ -17,17 +17,17 @@ class Hash
   end
 end
 
-class Module
-  unless respond_to? :namespace_for
-    # TODO3 cache it?
-    def self.namespace_for class_name
-      list = class_name.split("::")
-      if list.size > 1
-        list.pop
-        return eval(list.join("::"), TOPLEVEL_BINDING, __FILE__, __LINE__)
-      else
-        return nil
-      end
-    end
-  end
-end
+# class Module
+#   unless respond_to? :namespace_for
+#     # TODO3 cache it?
+#     def self.namespace_for class_name
+#       list = class_name.split("::")
+#       if list.size > 1
+#         list.pop
+#         return eval(list.join("::"), TOPLEVEL_BINDING, __FILE__, __LINE__)
+#       else
+#         return nil
+#       end
+#     end
+#   end
+# end
