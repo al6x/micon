@@ -2,11 +2,7 @@ require 'rspec_ext'
 
 require "micon"
 
-module Micon
-  class Core
-    include Helper
-  end
-end
+Micon::Core.send :include, Micon::Helper
 
 def micon; $micon end
 def micon= value  

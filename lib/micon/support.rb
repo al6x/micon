@@ -1,10 +1,8 @@
-module Micon
-  class Core
-    protected
-      def raise_without_self message
-        raise RuntimeError, message, caller.select{|path| path !~ /\/lib\/micon\//}
-      end
-  end
+class Micon::Core
+  protected
+    def raise_without_self message
+      raise RuntimeError, message, caller.select{|path| path !~ /\/lib\/micon\//}
+    end
 end
 
 class Hash  

@@ -1,4 +1,4 @@
-class Module  
+Module.class_eval do
   # 
   # inject attribute: :session
   # 

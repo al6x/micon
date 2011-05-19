@@ -1,3 +1,6 @@
+module Micon
+end
+
 %w{
   support
   
