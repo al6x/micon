@@ -6,6 +6,8 @@ Concentrate on business logic and interfaces and Micon will provide automatic co
 
 Technically it's [IoC][ioc] like framework with components, callbacks, scopes and bijections, inspired by Spring and JBoss Seam.
 
+Is it usefull, is there any real-life application? - I'm using it as a heart of my [web framework][rad_core], this site http://ruby-lang.info for example powered with it.
+
 ## Usage
 	
 Let's suppose you are building the Ruby on Rails clone, there are lots of modules let's try to deal with them
@@ -90,3 +92,4 @@ there's no multithreading in ruby.
 Copyright (c) Alexey Petrushin [http://4ire.net](http://4ire.net), released under the MIT license.
 
 [ioc]: http://en.wikipedia.org/wiki/Inversion_of_control
+[rad_core]: https://github.com/alexeypetrushin/rad_core
