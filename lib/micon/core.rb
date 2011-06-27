@@ -296,6 +296,7 @@ class Micon::Core
       # I intentially broke the Metadata incapsulation to provide better performance, don't refactor it.
       @registry = {} # @loaded_classes, @constants = {}, {}
       @metadata = Micon::Metadata.new(@registry)
+      @stack = {}
     
       @application, @custom_scopes = {}, {}
       
@@ -333,44 +334,50 @@ class Micon::Core
     def create_object key, container = nil        
       initializer, dependencies = @metadata.initializers[key]
       raise "no initializer for :#{key} component!" unless initializer
-    
-      dependencies.each{|d| self[d]}
-      @metadata.call_before key 
-    
-      if container
-        unless o = container[key]            
-          o = initializer.call                      
-          container[key] = o 
+      
+      raise "component :#{key} used before it's initialization is finished!" if @stack.include? key
+      @stack[key] = true
+      begin
+        dependencies.each{|d| self[d]}
+        @metadata.call_before key 
+      
+        if container
+          unless o = container[key]            
+            o = initializer.call                      
+            container[key] = o 
+          else
+            # complex case, there's an circular dependency, and the 'o' already has been 
+            # initialized in dependecies or callbacks
+            # here's the sample case:
+            # 
+            # app.register :environment, :application do
+            #   p :environment
+            #   'environment'
+            # end
+            # 
+            # app.register :conveyors, :application, depends_on: :environment do
+            #   p :conveyors
+            #   'conveyors'
+            # end
+            # 
+            # app.after :environment do
+            #   app[:conveyors]
+            # end
+            # 
+            # app[:conveyors]            
+                  
+            o = container[key]
+          end
         else
-          # complex case, there's an circular dependency, and the 'o' already has been 
-          # initialized in dependecies or callbacks
-          # here's the sample case:
-          # 
-          # app.register :environment, :application do
-          #   p :environment
-          #   'environment'
-          # end
-          # 
-          # app.register :conveyors, :application, depends_on: :environment do
-          #   p :conveyors
-          #   'conveyors'
-          # end
-          # 
-          # app.after :environment do
-          #   app[:conveyors]
-          # end
-          # 
-          # app[:conveyors]            
-                    
-          o = container[key]
+          o = initializer.call
         end
-      else
-        o = initializer.call
+        raise "initializer for component :#{key} returns nill!" unless o
+      ensure
+        @stack.delete key
       end
-      raise "initializer for component :#{key} returns nill!" unless o
-            
+          
       @metadata.call_after key, o
-      o
+      o      
     end  
     
     def name_hack namespace

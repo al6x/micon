@@ -3,13 +3,8 @@ require 'spec_helper'
 describe "Micelaneous" do
   with_load_path "#{spec_dir}/autoload/lib"    
   
-  before do
-    self.micon = Micon::Core.new
-  end
-  
-  after do
-    remove_constants :TheRouter, :TheRad
-  end
+  before{self.micon = Micon::Core.new}  
+  after{remove_constants :TheRouter, :TheRad}
   
   describe "autoloading" do  
     it "should autoload component definition" do
@@ -22,27 +17,41 @@ describe "Micelaneous" do
     #   TheRad::TheView.should == "TheView"
     # end
   end
+  
+  describe "complex circullar dependencies" do
+    it "should not initialize twice (from error)" do
+      micon.register :kit do
+        micon[:kit]
+        'kit'
+      end
+      lambda{micon[:kit]}.should raise_error(/component :kit used before it's initialization is finished/)
+    end
+    
+    it "should not initialize twice if called from dependency (from error)" do
+      micon.register :environment do
+        micon[:router]
+        'environment'
+      end
 
-  it "should not initialize twice (from error)" do
-    check = mock
-    check.should_receive(:environment).once.ordered
-    check.should_receive(:router).once.ordered
-    
-    micon.register :environment do
-      check.environment
-      'environment'
+      micon.register :router, depends_on: :environment do
+        'router'
+      end
+
+      -> {micon[:router]}.should raise_error(/component :router used before it's initialization is finished/)
     end
     
-    micon.register :router, depends_on: :environment do
-      check.router
-      'router'
+    it "should allow to use circullar dependency in :after callback" do
+      check = mock
+      check.should_receive(:initialized).once
+      micon.register :kit do
+        check.initialized
+        'kit'
+      end
+      micon.after :kit do
+        micon[:kit]
+      end
+      micon[:kit].should == 'kit'
     end
-    micon.after :environment do
-      # some code that needs :router
-      micon[:router]
-    end    
-    
-    micon[:router]
   end  
   
   it "helper method generation" do

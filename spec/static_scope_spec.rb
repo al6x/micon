@@ -1,13 +1,11 @@
 require 'spec_helper'
 
 describe "Application and Instance scopes" do  
-  before do
-    self.micon = Micon::Core.new
-  end
+  before{self.micon = Micon::Core.new}
   
   it "dependencies" do        
     micon.register(:another_object, depends_on: :the_object){"another_object"}
-    -> {micon[:another_object]}.should raise_error(/the_object/)
+    -> {micon[:another_object]}.should raise_error(/the_object.*not managed/)
     micon.register(:the_object){"the_object"}
     micon[:another_object]
   end
