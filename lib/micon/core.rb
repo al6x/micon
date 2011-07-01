@@ -320,6 +320,11 @@ class Micon::Core
     # @loaded_classes.clear
   end
     
+  # override it in Your framework if You need it
+  # - 'app/runtime'
+  # - :development, :test, :production
+  attr_accessor :runtime_path, :mode_name
+  
   protected    
     def autoload_component_definition key, bang = true
       begin
@@ -332,45 +337,35 @@ class Micon::Core
     end
 
     def create_object key, container = nil        
-      initializer, dependencies = @metadata.initializers[key]
+      initializer, dependencies, config = @metadata.initializers[key]
       raise "no initializer for :#{key} component!" unless initializer
       
-      raise "component :#{key} used before it's initialization is finished!" if @stack.include? key
-      @stack[key] = true
+      raise "component :#{key} used before it's initialization is finished!" if @stack.include? key      
       begin
         dependencies.each{|d| self[d]}
         @metadata.call_before key 
-      
-        if container
-          unless o = container[key]            
-            o = initializer.call                      
-            container[key] = o 
+
+        # we need to check container first, in complex cases (circullar dependency)
+        # the object already may be initialized.
+        # See "should allow to use circullar dependency in :after callback".
+        @stack[key] = true
+        o = (container && container[key]) || initializer.call
+        
+        unless config == false
+          unless config          
+            # loading and caching config
+            config = get_config key
+            config = false unless config # we use false to differentiate from nil
+            @metadata.initializers[key] = [initializer, dependencies, config]
+            
+            apply_config o, config if config
           else
-            # complex case, there's an circular dependency, and the 'o' already has been 
-            # initialized in dependecies or callbacks
-            # here's the sample case:
-            # 
-            # app.register :environment, :application do
-            #   p :environment
-            #   'environment'
-            # end
-            # 
-            # app.register :conveyors, :application, depends_on: :environment do
-            #   p :conveyors
-            #   'conveyors'
-            # end
-            # 
-            # app.after :environment do
-            #   app[:conveyors]
-            # end
-            # 
-            # app[:conveyors]            
-                  
-            o = container[key]
-          end
-        else
-          o = initializer.call
+            apply_config o, config
+          end                    
         end
+        
+        container[key] = o if container
+        
         raise "initializer for component :#{key} returns nill!" unless o
       ensure
         @stack.delete key
@@ -378,7 +373,16 @@ class Micon::Core
           
       @metadata.call_after key, o
       o      
-    end  
+    end
+    
+    def get_config key
+      ::Micon::Config.new(self, key).load
+    end
+    
+    def apply_config component, config
+      # config already have keys like "#{k}="
+      config.each{|k, v| component.send(k, v)}
+    end
     
     def name_hack namespace
       if namespace

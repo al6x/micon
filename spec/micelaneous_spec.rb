@@ -18,7 +18,7 @@ describe "Micelaneous" do
     # end
   end
   
-  describe "complex circullar dependencies" do
+  describe "complex circullar dependencies" do        
     it "should not initialize twice (from error)" do
       micon.register :kit do
         micon[:kit]
@@ -37,7 +37,7 @@ describe "Micelaneous" do
         'router'
       end
 
-      -> {micon[:router]}.should raise_error(/component :router used before it's initialization is finished/)
+      -> {micon[:router]}.should raise_error(/component .* used before it's initialization is finished/)
     end
     
     it "should allow to use circullar dependency in :after callback" do
@@ -51,6 +51,22 @@ describe "Micelaneous" do
         micon[:kit]
       end
       micon[:kit].should == 'kit'
+    end
+    
+    it "should allow circullar dependencies in :after callback" do
+      micon.register :environment do
+        'environment'
+      end
+    
+      micon.register :router, depends_on: :environment do
+        'router'
+      end
+    
+      micon.after :environment do
+        micon[:router]
+      end
+    
+      micon[:router]                  
     end
   end  
   

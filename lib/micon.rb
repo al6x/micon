@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Micon
 end
 
@@ -5,6 +7,7 @@ end
   support
   
   metadata
+  config
   core
   helper
   
