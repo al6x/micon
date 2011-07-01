@@ -107,66 +107,6 @@ class Micon::Core
     end
   end
   
-  # def get_constant_component key      
-  #   sname = @registry[key] || autoload_component_definition(key, false)
-  #   
-  #   case sname
-  #   when nil
-  #     nil        
-  #   when :instance        
-  #     must_be.never_called
-  #   when :application        
-  #     return nil unless @constants.include? key
-  #     
-  #     o = @application[key]          
-  #     unless o
-  #       return create_object(key, @application)
-  #     else
-  #       return o
-  #     end
-  #   else # custom        
-  #     must_be.never_called
-  #   end
-  # end
-  # 
-  # def get_constant namespace, const
-  #   original_namespace = namespace
-  #   namespace = nil if namespace == Object or namespace == Module
-  #   target_namespace = namespace
-  # 
-  #   # Name hack (for anonymous classes)
-  #   namespace = eval "#{name_hack(namespace)}" if namespace
-  # 
-  #   class_name = namespace ? "#{namespace.name}::#{const}" : const
-  # 
-  #   simple_also_tried = false
-  #   begin
-  #     simple_also_tried = (namespace == nil)
-  # 
-  #     if result = get_constant_component(class_name.to_sym)
-  #       if @loaded_classes.include?(class_name)
-  #         raise_without_self "something wrong is goin on, constant '#{const}' in '#{original_namespace}' namespace already has been defined!"
-  #       end
-  #     
-  #       real_namespace = namespace ? namespace : Object
-  #       if real_namespace.const_defined?(const)
-  #         raise_without_self "component trying to redefine constant '#{const}' that already defined in '#{real_namespace}'!"
-  #       end
-  #       
-  #       real_namespace.const_set const, result
-  #   
-  #       @loaded_classes[class_name] = [real_namespace, const]
-  # 
-  #       return result
-  #     elsif namespace
-  #       namespace = Module.namespace_for(namespace.name)
-  #       class_name = namespace ? "#{namespace.name}::#{const}" : const
-  #     end
-  #   end until simple_also_tried
-  #   
-  #   return nil
-  # end
-
   def []= key, value
     raise "can't assign nill as :#{key} component!" unless value
   
