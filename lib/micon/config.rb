@@ -6,13 +6,9 @@ class Micon::Config
   
   def load        
     files = []
-    files << find_file(config_path(name, nil), $LOAD_PATH)
-    files << find_file(config_path(name, micon.mode_name), $LOAD_PATH) if micon.mode_name
-    if micon.runtime_path
-      files << find_file(runtime_config_path(name, nil), [micon.runtime_path])
-      files << find_file(runtime_config_path(name, micon.mode_name), [micon.runtime_path]) if micon.mode_name
-    end
-    
+    files.push *config_paths.collect{|path| find_file(path, $LOAD_PATH)}
+    files.push *runtime_config_paths.collect{|path| find_file(path, [micon.runtime_path])} if micon.runtime_path?
+
     config = {}
     files.compact.each do |f|
       c = YAML.load_file(f)
@@ -25,14 +21,21 @@ class Micon::Config
   end
   
   protected
-    def config_path name, mode
+    def config_paths
       fs_name = name.to_s.gsub(/::/, '/')
-      mode ? "/components/#{fs_name}.#{mode}.yml" : "/components/#{fs_name}.yml"
+      paths = ["/components/#{fs_name}.yml"]
+      paths << "/components/#{fs_name}.#{micon.mode}.yml" if micon.mode?
+      paths
     end
 
-    def runtime_config_path name, mode
+    def runtime_config_paths
       fs_name = name.to_s.gsub(/::/, '/')
-      mode ? "/config/#{fs_name}.#{mode}.yml" : "/config/#{fs_name}.yml"
+      paths = ["/config/#{fs_name}.yml"]
+      if micon.mode?
+        paths << "/config/#{fs_name}.#{micon.mode}.yml"
+        paths << "/config/#{micon.mode}/#{fs_name}.yml"
+      end
+      paths
     end
   
     def find_file path, directories

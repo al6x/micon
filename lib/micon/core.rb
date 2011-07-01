@@ -320,10 +320,26 @@ class Micon::Core
     # @loaded_classes.clear
   end
     
-  # override it in Your framework if You need it
+  # 
+  # :mode, :runtime_path, used in component configuration
   # - 'app/runtime'
   # - :development, :test, :production
-  attr_accessor :runtime_path, :mode_name
+  # 
+  def runtime_path; @runtime_path || raise(":runtime_path not defined!") end
+  def runtime_path= runtime_path
+    runtime_path, force = runtime_path
+    raise "some components has been already initialized before You set :runtime_path!" unless empty? or force
+    @runtime_path = runtime_path
+  end
+  def runtime_path?; !!@runtime_path end
+    
+  def mode; @mode || raise(":mode not defined!") end
+  def mode= mode        
+    mode, force = mode    
+    raise "some components has been already initialized before You set :mode!" unless empty? or force
+    @mode = mode
+  end
+  def mode?; !!@mode end
   
   protected    
     def autoload_component_definition key, bang = true
