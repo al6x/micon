@@ -284,9 +284,9 @@ class Micon::Core
   protected    
     def autoload_component_definition key, bang = true
       begin
-        load "components/#{key.to_s.gsub(/::/, '/')}.rb"
+        require "components/#{key.to_s.gsub(/::/, '/')}"
       rescue LoadError
-      end
+      end      
       sname = @registry[key]
       raise_without_self "'#{key}' component not managed!" if bang and !sname
       sname

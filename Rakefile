@@ -2,7 +2,7 @@ require 'rake_ext'
 
 project(
   name: "micon",
-  version: "0.1.7",
+  gem: true,
   summary: "Assembles and Manages Components of Your Application",
 
   author: "Alexey Petrushin",
