@@ -57,7 +57,7 @@ describe "Callbacks" do
     end    
   end 
   
-  describe "micelaneous" do
+  describe "miscellaneous" do
     it "should fire callbacks after assigning component" do
       micon.register(:the_object)
       check = mock

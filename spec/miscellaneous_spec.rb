@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "Micelaneous" do
+describe "Miscellaneous" do
   with_load_path "#{spec_dir}/autoload/lib"    
   
   before{self.micon = Micon::Core.new}  
