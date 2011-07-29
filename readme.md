@@ -89,7 +89,7 @@ there's no multithreading in ruby.
 - refactor specs, they are messy a little.
 - maybe it makes sense to add ability to add dependencies for components after component registration?
 
-Copyright (c) Alexey Petrushin [http://4ire.net](http://4ire.net), released under the MIT license.
+Copyright (c) Alexey Petrushin http://petrush.in, released under the MIT license.
 
 [ioc]: http://en.wikipedia.org/wiki/Inversion_of_control
 [rad_core]: https://github.com/alexeypetrushin/rad_core
