@@ -1,4 +1,5 @@
 require 'rspec_ext'
+require 'ostruct'
 
 require "micon"
 
