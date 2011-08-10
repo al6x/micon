@@ -82,12 +82,7 @@ But if you need it it can be done very easy.
 
 	$ sudo gem install micon
 	
-## TODO
-
-- remove threads and synchronization support, probably it will be never needed in any real situation, because 
-there's no multithreading in ruby.
-- refactor specs, they are messy a little.
-- maybe it makes sense to add ability to add dependencies for components after component registration?
+## License
 
 Copyright (c) Alexey Petrushin http://petrush.in, released under the MIT license.
 
