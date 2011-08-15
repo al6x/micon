@@ -13,72 +13,112 @@ Is it usefull, is there any real-life application? - I'm using it as a heart of 
 Let's suppose you are building the Ruby on Rails clone, there are lots of modules let's try to deal with them
 
 ``` ruby
-require 'micon'
-def app; MICON end
+# Here's our Web Framework, let's call it Rad
 
-# static (singleton) components
-class Environment
-	register_as :environment
+# Let's define shortcut to access the IoC API (optional
+# but handy step). I don't know how would You like to call it, 
+# so I leave this step to You.
+class ::Object
+  def rad; MICON end
 end
 
+# let's define some components  	
+# the :logger is one per application it's a static component (like singleton)
 class Logger
-	register_as :logger
-	
-	def info msg; end
-end	
+  register_as :logger
+  attr_accessor :log_file_path
+	def info msg
+	  puts "#{msg} (writen to #{log_file_path})" unless defined?(RSpec)
+	end
+end
 
+# To demostrate basics of working with compnents let's configure our :logger
+# manually (in the next example, it will be configured automatically).
+rad.logger.log_file_path = '/tmp/rad.log'  	
+
+# The :router to be properly initialized, so we use another form of
+# component registration. 
 class Router
-	register_as :router
-	
-	def parse rote_filename
-	  # do something
+	def initialize routes; @routes = routes end
+	def decode request; 
+	  class_name, method = @routes[request.url]                
+	  return eval(class_name), method # returning actual class
+	end
+end
+rad.register :router do
+  Router.new '/index' => ['PagesController', :index]
+end
+
+# The :controller component should be created and destroyed dynamically, 
+# for each request, we specifying that component is dynamic 
+# by declaring it's :scope. 
+# And, we don't know beforehead what it actully will be, for different 
+# request there can be different controllers, 
+# so, here we just declaring it without any initialization block, it
+# will be created at runtime later.
+rad.register :controller, scope: :request
+
+# Let's define some of our controllers, the PagesController, note - we
+# don't register it as component.
+class PagesController
+	# We need access to :logger and :request, let's inject them
+	inject logger: :logger, request: :request
+
+	def index
+		# Here we can use injected component
+		logger.info "Application: processing #{request}"  			
 	end
 end
 
-# callbacks, we need to parse routes right after environment is initialized
-app.after :environment do
-	app[:router].parse '/config/routes.rb'
-end
-
-# dynamic components, will be created and destroyed for every request
+# Request is also dynamic, and it also can't be created beforehead.
+# We also registering it without initialization, it will be
+# created at runtime later.
 class Request
-	register_as :request, scope: :request
+  attr_reader :url      
+	def initialize url; @url = url end		  
+  def to_s; @url end
 end
+# Registering without initialization block.
+rad.register :request, scope: :request
 
-class Application
-	# injecting components into attributes
-	inject request: :request, logger: :logger
-
-	def do_business
-		# now we can use injected component
-		do_something_with request
-		logger.info 'done'
-	end
-	
-	def do_something_with request; end
-end
-
-# Web Server / Rack Adapter
+# We need to integrate our application with web server, for example rack.
+# When the server receive web request, it calls the :call method of our RackAdapter
 class RackAdapter
-	def call env		
-		# activating new request scope, the session component will be created and destroyed automatically
-		app.activate :request, {} do
-			Application.new.do_business
+  # Injecting components
+  inject request: :request, controller: :controller
+  
+	def call env
+    # We need to tell Micon that the :request scope is started, so it will know
+    # that some dynamic components should be created during this scope and 
+    # destroyed at the end of it.
+		rad.activate :request, {} do
+      # Here we manually creating the Request component
+      self.request = Request.new '/index'
+		  
+		  # The :router also can be injected via :inject,
+      # but we can also use another way to access components,
+      # every component also availiable as rad.<component_name>
+		  controller_class, method = rad.router.decode request
+		  
+      # Let's create and call our controller
+		  self.controller = controller_class.new
+		  controller.send method
 		end
 	end
 end    
 
+# Let's pretend that there's a Web Server and run our application,
+# You should see something like this in the console:
+#   Application: processing /index
 RackAdapter.new.call({})
 ```
 
 The example above is a good way to demonstrate how the IoC works in general, but it will not show two **extremelly important** aspects of IoC: **auto-discovery** and **auto-configuration**.
+In real-life scenario You probably will use it in a little different way, as will be shown below, and utilize these important features (I wrote a short article about why these features are important [You underestimate the power of IoC][article]).
 
-In real-life scenario You should use it in a little other way, as will be shown below and utilize these important features.
-Without using these features IoC is almost useless, and can even make Your code more complicated instead of simplifying it.
+I would like to repeat it one more time - **auto-discovery and auto-configuration is extremelly important features** of the IoC, don't ignore them.
 
-I would like to repeat it one more time - **if You don't use auto-discovery and auto-configuration then the IoC is almost useless**, is like to trying to saw with the chainsaw turned off (here's more details http://ruby-lang.info/blog/you-underestimate-the-power-of-ioc-3fh).
-
-Belowa are the same example but done with utilizing these features, this is how the Micon IoC should be used in real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [spec/example_spec/lib](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec/lib): folder.
+Below are the same example but done with utilizing these features, this is how the Micon IoC is supposed be used in real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [spec/example_spec/lib](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec/lib) folder.
 
 ``` ruby
 # Here's our Web Framework, let's call it Rad
@@ -138,3 +178,4 @@ Copyright (c) Alexey Petrushin http://petrush.in, released under the MIT license
 
 [ioc]: http://en.wikipedia.org/wiki/Inversion_of_control
 [rad_core]: https://github.com/alexeypetrushin/rad_core
+[article]: http://ruby-lang.info/blog/you-underestimate-the-power-of-ioc-3fh

@@ -9,6 +9,8 @@ describe "Micon Overview" do
   end
   
   it "example" do
+    require 'micon'
+    
     # Here's our Web Framework, let's call it Rad
     
     # Let's define shortcut to access the IoC API (optional
@@ -123,6 +125,9 @@ describe "Micon Overview" do
       with_autoload_path "#{spec_dir}/lib"
       
       it "example" do
+        require 'micon'
+        require 'class_loader'
+        
         # Here's our Web Framework, let's call it Rad
     
         # Let's define shortcut to access the IoC API (optional
