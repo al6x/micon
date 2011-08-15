@@ -13,6 +13,8 @@ Is it usefull, is there any real-life application? - I'm using it as a heart of 
 Let's suppose you are building the Ruby on Rails clone, there are lots of modules let's try to deal with them
 
 ``` ruby
+require 'micon'
+
 # Here's our Web Framework, let's call it Rad
 
 # Let's define shortcut to access the IoC API (optional
@@ -121,6 +123,9 @@ I would like to repeat it one more time - **auto-discovery and auto-configuratio
 Below are the same example but done with utilizing these features, this is how the Micon IoC is supposed be used in real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [spec/example_spec/lib](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec/lib) folder.
 
 ``` ruby
+require 'micon'
+require 'class_loader'
+
 # Here's our Web Framework, let's call it Rad
 
 # Let's define shortcut to access the IoC API (optional
