@@ -5,7 +5,7 @@ class Micon::Core
     end
 end
 
-class Hash  
+class Hash
   unless method_defined? :symbolize_keys
     def symbolize_keys
       r = {}

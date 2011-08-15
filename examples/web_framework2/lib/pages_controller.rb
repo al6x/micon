@@ -6,6 +6,6 @@ class PagesController
 
   def index
     # Here we can use injected component
-    logger.info "Application: processing #{request}"  
+    logger.info "Application: processing #{request}"
   end
 end

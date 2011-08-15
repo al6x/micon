@@ -1,2 +1,2 @@
 # Registering without initialization block.
-rad.register :request, scope: :request
+micon.register :request, scope: :request

@@ -3,17 +3,17 @@ require 'spec_helper'
 describe "Managed" do
   before :all do
     self.micon = Micon::Core.new
-  
-    class ManagedObject  
+
+    class ManagedObject
       register_as :managed_object
       inject object: :object_key
 
-      class << self  
+      class << self
         inject object: :object_key
       end
     end
   end
-  
+
   before do
     micon.clear
   end
@@ -33,7 +33,7 @@ describe "Managed" do
     o = ManagedObject.new
     o.object.should == the_object
   end
-  
+
   it "outjection" do
     the_object = "The Object"
     micon.register(:object_key)
@@ -42,7 +42,7 @@ describe "Managed" do
     ManagedObject.object = the_object
     ManagedObject.object.should == the_object
   end
-  
+
   it "empty?" do
     micon.should be_empty
     micon[:managed_object]
