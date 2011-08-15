@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "Configuration" do    
+describe "Configuration" do
   before{self.micon = Micon::Core.new}
   
   it "should configure component if config provided" do
