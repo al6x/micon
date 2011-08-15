@@ -35,11 +35,11 @@ class Logger
 end
 
 # To demostrate basics of working with compnents let's configure our :logger
-# manually (in the next example, it will be configured automatically).
+# explicitly (in the next example, it will be configured automatically).
 rad.logger.log_file_path = '/tmp/rad.log'  
 
-# The :router to be properly initialized, so we use another form of
-# component registration.  
+# The :router requires complex initialization, so we use 
+# another form of component registration.
 class Router
   def initialize routes; @routes = routes end
   def decode request;  
@@ -83,7 +83,7 @@ end
 # Registering without initialization block.
 rad.register :request, scope: :request
 
-# We need to integrate our application with web server, for example rack.
+# We need to integrate our application with web server, for example with the Rack.
 # When the server receive web request, it calls the :call method of our RackAdapter
 class RackAdapter
   # Injecting components
@@ -116,11 +116,13 @@ RackAdapter.new.call({})
 ```
 
 The example above is a good way to demonstrate how the IoC works in general, but it will not show two **extremelly important** aspects of IoC: **auto-discovery** and **auto-configuration**.
-In real-life scenario You probably will use it in a little different way, as will be shown below, and utilize these important features (I wrote a short article about why these features are important [You underestimate the power of IoC][article]).
+In real-life scenario You probably will use it in a little different way, as will be shown below, and utilize these important features (there's a short article about why these features are important [You underestimate the power of IoC][article]).
 
 I would like to repeat it one more time - **auto-discovery and auto-configuration is extremelly important features** of the IoC, don't ignore them.
 
-Below are the same example but done with utilizing these features, this is how the Micon IoC is supposed be used in real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [spec/example_spec/lib](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec/lib) folder.
+Below are the same example but done with utilizing these features, this is how the Micon IoC is supposed be used in the real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [spec/example_spec/lib](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec/lib) folder.
+
+Please note that this time logger convigured automatically, with logger.yml configuration file.
 
 ``` ruby
 require 'micon'

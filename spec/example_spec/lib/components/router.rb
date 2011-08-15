@@ -1,5 +1,5 @@
-# The :router to be properly initialized, so we use another form of
-# component registration.  
+# The :router requires complex initialization, so we use 
+# another form of component registration.
 class Router
   def initialize routes; @routes = routes end
   def decode request;  

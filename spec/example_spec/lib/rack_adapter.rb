@@ -1,4 +1,4 @@
-# We need to integrate our application with web server, for example rack.
+# We need to integrate our application with web server, for example with the Rack.
 # When the server receive web request, it calls the :call method of our RackAdapter
 class RackAdapter
   # Injecting components

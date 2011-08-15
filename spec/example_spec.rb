@@ -31,11 +31,11 @@ describe "Micon Overview" do
     end
   
     # To demostrate basics of working with compnents let's configure our :logger
-    # manually (in the next example, it will be configured automatically).
+    # explicitly (in the next example, it will be configured automatically).
     rad.logger.log_file_path = '/tmp/rad.log'  
   
-    # The :router to be properly initialized, so we use another form of
-    # component registration.  
+    # The :router requires complex initialization, so we use 
+    # another form of component registration.
     class Router
       def initialize routes; @routes = routes end
       def decode request;  
@@ -79,7 +79,7 @@ describe "Micon Overview" do
     # Registering without initialization block.
     rad.register :request, scope: :request
 
-    # We need to integrate our application with web server, for example rack.
+    # We need to integrate our application with web server, for example with the Rack.
     # When the server receive web request, it calls the :call method of our RackAdapter
     class RackAdapter
       # Injecting components
