@@ -117,7 +117,7 @@ In real-life scenario You probably will use it in a little different way, as wil
 
 I would like to repeat it one more time - **auto-discovery and auto-configuration is extremelly important features** of the IoC, don't ignore them.
 
-Below are the same example but done with utilizing these features, this is how the Micon IoC is supposed be used in the real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [spec/example_spec/lib](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec/lib) folder.
+Below are the same example but done with utilizing these features, this is how the Micon IoC is supposed be used in the real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [examples/web_framework2/lib/components](https://github.com/alexeypetrushin/micon/blob/master/examples/web_framework2/lib/components) folder.
 
 Note also, that this time logger convigured automatically, with the logger.yml configuration file.
 
@@ -169,7 +169,7 @@ autoload_path lib_dir
 RackAdapter.new.call({})
 ```
 
-For the actual code please look at [spec/example_spec.rb](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec.rb)
+For the actual code please look at [examples](https://github.com/alexeypetrushin/micon/blob/master/examples)
 
 If You are interested in more samples, please look at the [actual components][rad_core_components] used in the Rad Core Framework.
 
