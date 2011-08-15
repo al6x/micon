@@ -122,7 +122,7 @@ I would like to repeat it one more time - **auto-discovery and auto-configuratio
 
 Below are the same example but done with utilizing these features, this is how the Micon IoC is supposed be used in the real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [spec/example_spec/lib](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec/lib) folder.
 
-Please note that this time logger convigured automatically, with logger.yml configuration file.
+Note also, that this time logger convigured automatically, with the logger.yml configuration file.
 
 ``` ruby
 require 'micon'
