@@ -1,10 +1,10 @@
-class Micon::Config    
+class Micon::Config  
   attr_reader :micon, :name
   def initialize micon, name
     @micon, @name = micon, name
   end
   
-  def load        
+  def load  
     files = []
     files.push *config_paths.collect{|path| find_file(path, $LOAD_PATH)}
     files.push *runtime_config_paths.collect{|path| find_file(path, [micon.runtime_path])} if micon.runtime_path?

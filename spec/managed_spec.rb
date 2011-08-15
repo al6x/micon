@@ -3,12 +3,12 @@ require 'spec_helper'
 describe "Managed" do
   before :all do
     self.micon = Micon::Core.new
-    
-    class ManagedObject      
+  
+    class ManagedObject  
       register_as :managed_object
       inject object: :object_key
 
-      class << self        
+      class << self  
         inject object: :object_key
       end
     end

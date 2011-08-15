@@ -1,6 +1,6 @@
-# 
+#  
 # This class intentially made using "wired and not clear code", to provide better performance.
-# 
+#  
 class Micon::Metadata
   attr_accessor :registry, :initializers, :before, :after
   
@@ -38,9 +38,9 @@ class Micon::Metadata
   alias_method :deep_clone, :clone
   
   
-  # 
+  #  
   # Registry
-  # 
+  #  
   def [] key
     @registry[key]
   end
@@ -54,9 +54,9 @@ class Micon::Metadata
   end
   
   
-  # 
+  #  
   # Callbacks
-  # 
+  #  
   def register_before key, &block
     raise "you should provide block!" unless block
     (@before[key] ||= []) << block
@@ -69,7 +69,7 @@ class Micon::Metadata
   
   def call_before key
     if callbacks = @before[key]
-      callbacks.each{|c| c.call} 
+      callbacks.each{|c| c.call}  
     end
   end
   
@@ -80,9 +80,9 @@ class Micon::Metadata
   end
 
 
-  # 
+  #  
   # Scope callbacks
-  # 
+  #  
   def register_before_scope key, &block
     raise "you should provide block!" unless block
     (@before_scope[key] ||= []) << block
@@ -113,9 +113,9 @@ class Micon::Metadata
   end
   
   
-  # 
+  #  
   # Other
-  # 
+  #  
   # def inspect
   #   "Registry: " + self.registry.keys.inspect
   # end
