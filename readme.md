@@ -167,6 +167,8 @@ RackAdapter.new.call({})
   
 For the actual code please look at [spec/example_spec.rb](https://github.com/alexeypetrushin/micon/blob/master/spec/example_spec.rb)
 
+If You are interested in more samples, please look at the [actual components][rad_core_components] used in the Rad Core Framework.
+
 ## Note
 
 Current wersion isn't thread-safe, and I did it intentially. Actually, the first version was implemented as thread-safe, but because there's no actual multithreading in Ruby, the only thing it does - adds complexity and performance losses, so I removed it.
@@ -184,4 +186,5 @@ Copyright (c) Alexey Petrushin http://petrush.in, released under the MIT license
 
 [ioc]: http://en.wikipedia.org/wiki/Inversion_of_control
 [rad_core]: https://github.com/alexeypetrushin/rad_core
+[rad_core_components]: https://github.com/alexeypetrushin/rad_core/tree/master/lib/components
 [article]: http://ruby-lang.info/blog/you-underestimate-the-power-of-ioc-3fh
