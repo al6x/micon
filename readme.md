@@ -169,8 +169,8 @@ For the actual code please look at [spec/example_spec.rb](https://github.com/ale
 
 ## Note
 
-Current wersion isn't thread-safe, and I did it intentially. Actually the firs version was implemented as thread-safe, but because there's no actual multithreading in Ruby, the only thing it does - adds complexity and performance losses, so I removed it.
-But if you really need it for some reason it can be easily done.
+Current wersion isn't thread-safe, and I did it intentially. Actually, the first version was implemented as thread-safe, but because there's no actual multithreading in Ruby, the only thing it does - adds complexity and performance losses, so I removed it.
+But if you really need it for some reason - it can be easily done.
   
 ## Installation
 
