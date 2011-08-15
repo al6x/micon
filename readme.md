@@ -169,7 +169,7 @@ autoload_path lib_dir
 RackAdapter.new.call({})
 ```
 
-For the actual code please look at [examples](https://github.com/alexeypetrushin/micon/blob/master/examples)
+For the actual code please look at [examples](https://github.com/alexeypetrushin/micon/blob/master/examples).
 
 If You are interested in more samples, please look at the [actual components][rad_core_components] used in the Rad Core Framework.
 
