@@ -18,9 +18,9 @@ Micon allows You easilly and transparently eliminate dependencies and configs. U
 
 Micon **solves all these tasks automatically**, and has the following **price** - You has to:
 
-- use the *register component_name, &initialization_block* method for component initialization
-- use the *inject component_name* to whire components toghether
-- place component definition to the lib/components folder
+- use the *register(component_name, &initialization_block)* method for component initialization
+- use the *inject(component_name)* to whire components toghether
+- place component definition to the "lib/components" folder
 
 That's all the price, not a big one, compared to the value, eh? 
 That all You need to know to use 95% of it, there are also 2-3 more specific methods, but they are needed very rarelly.
