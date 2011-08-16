@@ -33,7 +33,7 @@ Techincally Micon is sort of Dependency Injector, but because of it's simplicity
 require 'micon'
 require 'logger' # standard ruby logger
 
-micon.register(:logger){Logger.new}
+micon.register(:logger){Logger.new STDOUT}
 
 class Application
   inject logger: :logger
@@ -43,7 +43,9 @@ class Application
   end
 end
 
-Application.new.run             # => running ...
+Application.new.run
+# You should see something like this in the console:
+# [2011-08-16T19:09:05.921238 #24944]  INFO -- : running ...
 ```
 
 Code in examples/basics.rb
