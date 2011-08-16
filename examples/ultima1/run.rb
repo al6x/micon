@@ -20,14 +20,17 @@ module Ultima
   end
 end
 
+# reading application config
 require 'yaml'
 Ultima.config = YAML.load_file "#{dir}/config/config.yml"
 
+# initializing router
 require 'router'
 router = Router.new
 router.url_root = Ultima.config['url_root']
 Ultima.router = router
 
+# loading request and controller
 require 'request'
 require 'controller'
 

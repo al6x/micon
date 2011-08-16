@@ -20,7 +20,7 @@ Micon **solves all these tasks automatically**, and has the following **price** 
 
 - use the *register(component_name, &initialization_block)* method for component initialization
 - use the *inject(component_name)* to whire components toghether
-- place component definition to the "lib/components" folder
+- place component definitions to the "lib/components" folder
 
 That's all the price, not a big one, compared to the value, eh? 
 That all You need to know to use 95% of it, there are also 2-3 more specific methods, but they are needed very rarelly.
@@ -60,6 +60,11 @@ There will be two steps, at the first we'll build it as usual, and at the second
 There will be following components: router, request.
 
 ``` ruby
+# setting load paths
+dir = File.dirname __FILE__
+$LOAD_PATH << "#{dir}/lib"
+
+
 # Assembling Ultima Framework
 module Ultima
   class << self
@@ -77,14 +82,17 @@ module Ultima
   end
 end
 
+# reading application config
 require 'yaml'
 Ultima.config = YAML.load_file "#{dir}/config/config.yml"
 
+# initializing router
 require 'router'
 router = Router.new
 router.url_root = Ultima.config['url_root']
 Ultima.router = router
 
+# loading request and controller
 require 'request'
 require 'controller'
 
