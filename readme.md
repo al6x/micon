@@ -1,6 +1,6 @@
 # Micon - silent and invisible Killer of dependencies and configs
 
-Micon allows You easilly and transparently eliminate dependencies and configs in Your Application. Usually, when You are building complex system there are following tasks should be solved:
+Micon allows You easilly and transparently eliminate dependencies and configs. Usually, when You are building complex system there are following tasks should be solved:
 
 - where the component's code is located
 - in what order should it be loaded
