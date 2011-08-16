@@ -1,177 +1,154 @@
-# Micon IoC assembles and manages Your Application
+# Micon - silent and invisible Killer of dependencies and configs
 
-Micon is infrastructural component, invisible to user and it's main goal is to simplify development. It reduces complex monolithic application to set of simple low coupled components.
+Micon allows You easilly and transparently eliminate dependencies and configs in Your Application. Usually, when You are building complex system there are following tasks should be solved:
 
-Concentrate on business logic and interfaces and Micon will provide automatic configuration, life cycle management and dependency resolving.
+- where the component's code is located
+- in what order should it be loaded
+- what configs does the component needs to be properly initialized
+- where those configs are stored
+- how to change configs in different environments
+- where are dependencies for component and how they should be initialized
+- how to replace some components with custom implementation
+- how to assembly parts of application for specs/tests
+- how to restore state after each spec/test (isolate it from each other)
+- how to control life-cycle of dynamically created components
+- connecting components to assemble an application
 
-Technically it's [IoC][ioc] like framework with components, callbacks, scopes and bijections, inspired by Spring and JBoss Seam.
+*By component I mean any parts of code logically grouped together.*
 
-Is it usefull, is there any real-life application? - I'm using it as a heart of my [web framework][rad_core], this sites http://robotigra.ru, http://ruby-lang.info for example powered with it.
+Micon **solves all these tasks automatically**, and has the following **price** - You has to:
 
-## Usage
+- use the *register component_name, &initialization_block* method for component initialization
+- use the *inject component_name* to whire components toghether
+- place component definition to the lib/components folder
 
-Let's suppose you are building the Ruby on Rails clone, there are lots of modules let's try to deal with them
+That's all the price, not a big one, compared to the value, eh? 
+That all You need to know to use 95% of it, there are also 2-3 more specific methods, but they are needed very rarelly.
+
+Techincally Micon is sort of Dependency Injector, but because of it's simplicity and invisibility it looks like an alien compared to it's complex and bloated IoC / DI cousins.
+
+## Basic example
 
 ``` ruby
-# Let's suppose that we want to build the Rails clone,
-# there will be lot's of components - logger, controllers, router, ...
-
 require 'micon'
+# standard ruby logger
+require 'logger' 
 
-# Handy shortcut to access the IoC API (this is optional and You can omit it).
-def micon; MICON end
+micon.register(:logger){Logger.new}
 
-# Let's define some components.
-# The :logger is one per application, it's a static component (like singleton).
-class Logger
-  register_as :logger
-  attr_accessor :log_file_path
-  def info msg
-    puts "#{msg} (writen to #{log_file_path})"
+class Application
+  inject logger: :logger
+  
+  def run
+    logger.info 'running ...'
   end
 end
 
-# To demostrate basics of working with compnents let's configure our :logger
-# explicitly (in the next example, it will be configured automatically).
-micon.logger.log_file_path = '/tmp/web_framework.log'
+Application.new.run             # => running ...
+```
 
-# The :router requires complex initialization, so we use
-# another form of component registration.
-class Router
-  def initialize routes; @routes = routes end
-  def decode request;
-    class_name, method = @routes[request.url]
-    return eval(class_name), method # returning actual class
-  end
-end
-micon.register :router do
-  Router.new '/index' => ['PagesController', :index]
-end
+Code in examples/basics.rb
 
-# The :controller component should be created and destroyed dynamically,
-# for each request, we specifying that component is dynamic
-# by declaring it's :scope.
-# And, we don't know beforehead what it actully will be, for different
-# request there can be different controllers,
-# so, here we just declaring it without any initialization block, it
-# will be created at runtime later.
-micon.register :controller, scope: :request
+## Advanced example: let's build the Ultima - an Ultimate Web Framework
 
-# Let's define some of our controllers, the PagesController, note - we
-# don't register it as component.
-class PagesController
-  # We need access to :logger and :request, let's inject them
-  inject logger: :logger, request: :request
+This example is more complicated and requires about 3-7 minutes. 
 
-  def index
-    # Here we can use injected component
-    logger.info "Application: processing #{request}"
-  end
-end
+Let's pretend that we are building an Ultimate Framework, the RoR Killer. There will be lot's of modules and dependencies, let's see how Micon can eliminate them.
+There will be two steps, at the first we'll build it as usual, and at the second refactor it using Micon.
 
-# Request is also dynamic, and it also can't be created beforehead.
-# We also registering it without initialization, it will be
-# created at runtime later.
-class Request
-  attr_reader :url
-  def initialize url; @url = url end
-  def to_s; @url end
-end
-# Registering without initialization block.
-micon.register :request, scope: :request
+There will be following components: router, request.
 
-# We need to integrate our application with web server, for example with the Rack.
-# When the server receive web request, it calls the :call method of our RackAdapter
-class RackAdapter
-  # Injecting components
-  inject request: :request, controller: :controller
-
-  def call env
-    # We need to tell Micon that the :request scope is started, so it will know
-    # that some dynamic components should be created during this scope and
-    # destroyed at the end of it.
-    micon.activate :request, {} do
-      # Here we manually creating the Request component
-      self.request = Request.new '/index'
-
-      # The :router also can be injected via :inject,
-      # but we can also use another way to access components,
-      # every component also availiable as micon.<component_name>
-      controller_class, method = micon.router.decode request
-
-      # Let's create and call our controller
-      self.controller = controller_class.new
+``` ruby
+# Assembling Ultima Framework
+module Ultima
+  class << self
+    attr_accessor :router, :config
+    
+    def run url
+      request = Request.new url
+      
+      controller_class, method = router.decode url
+      
+      controller = controller_class.new      
+      controller.request = request
       controller.send method
     end
   end
 end
 
-# Let's pretend that there's a Web Server and run our application,
+require 'yaml'
+Ultima.config = YAML.load_file "#{dir}/config/config.yml"
+
+require 'router'
+router = Router.new
+router.url_root = Ultima.config['url_root']
+Ultima.router = router
+
+require 'request'
+require 'controller'
+
+
+# Assemblilng Application
+require 'pages_controller'
+
+Ultima.router.add_route '/index', PagesController, :index
+
+
+# Let's run it
+Ultima.run '/index'
 # You should see something like this in the console:
-#   Application: processing /index
-RackAdapter.new.call({})
+# PagesController: displaying the :index page.
 ```
 
-The example above is a good way to demonstrate how the IoC works in general, but it will not show two **extremelly important** aspects of IoC: **auto-discovery** and **auto-configuration**.
-In real-life scenario You probably will use it in a little different way, as will be shown below, and utilize these important features (there's a short article about why these features are important [You underestimate the power of IoC][article]).
+Code in examples/ultima1/run.rb
 
-I would like to repeat it one more time - **auto-discovery and auto-configuration is extremelly important features** of the IoC, don't ignore them.
-
-Below are the same example but done with utilizing these features, this is how the Micon IoC is supposed be used in the real-life scenario. As You can see it's almost empty, because all the components are auto-discovered, auto-loaded and auto-configured. Components are located in the [examples/web_framework2/lib/components](https://github.com/alexeypetrushin/micon/blob/master/examples/web_framework2/lib/components) folder.
-
-Note also, that this time logger convigured automatically, with the logger.yml configuration file.
+Below are the same example but done with Micon. As You can see there's no any assembling or configuration code, because all the components are auto-discovered, auto-loaded and auto-configured.
 
 ``` ruby
-# Please examine the 'web_framework1.rb' example before proceeding with this one.
+# Assembling Ultima Framework
+# All components: router, request, controller will be automatically loaded & configured.
+class Ultima
+  inject router: :router
+  
+  def run url
+    # we need to tell Micon about the :request scope, so the Request will be
+    # created & destroyed during this scope automatically.
+    micon.activate :request, {} do
+      request = Request.new url
+    
+      controller_class, method = router.decode url
+    
+      controller = controller_class.new
+      # no need to explicitly set request, it will be automatically injected
+      controller.send method
+    end
+  end
+end
+micon.register(:ultima){Ultima.new}
 
-# Let's suppose that we want to build the Rails clone,
-# there will be lot's of components - logger, controllers, router, ...
+# No need for 'requre', all classes will be discowered & laoded automatically
 
-# In this example we also need another tool that automatically find & load classes.
-require 'micon'
-require 'class_loader'
+# No need for config, Micon will automatically discower config/router.yml
 
-# Handy shortcut to access the IoC API (this is optional and You can omit it).
-def micon; MICON end
+# No need for manual router configuring, router.yml config will be applied automatically
 
-# Auto-discovering:
-#
-# All components (:logger, :router, :request, :controller) are defined in
-# the web_framework2/lib/components folder.
-# All classes (PagesController, RackAdapter) are
-# located in web_framework2/lib folder.
-#
-# Note that there will be no any "require 'xxx'" clause, all components and
-# classes will be loaded and dependecies be resolved automatically.
 
-# Adding libraries to load path (in order to load components automatically).
-lib_dir = "#{File.dirname(__FILE__)}/web_framework2/lib"
-$LOAD_PATH << lib_dir
+# Assemblilng Application
+# Controller will be loaded automatically
+micon.router.add_route '/index', PagesController, :index
 
-# Adding libraries to autoload path (in order to load classes automatically).
-autoload_path lib_dir
 
-# Auto-configuring
-#
-# Remember our manual configuration of "logger.log_file_path" from
-# the previous example?
-# This time it will be configured automatically, take a look at
-# the web_framework2/lib/components/logger.yml file.
-#
-# Note, that there are also logger.production.yml, Micon is smart
-# and will merge configs in the following order:
-# logger.yml <- logger.<env>.yml <- <runtime_path>/config/logger.yml
-# (If you define :environment and :runtime_path variables).
-
-# Let's pretend that there's a Web Server and run our application,
+# Let's run it
+micon.ultima.run '/index'
 # You should see something like this in the console:
-#   Application: processing /index
-RackAdapter.new.call({})
+# PagesController: displaying the :index page.
 ```
 
-For the actual code please look at [examples](https://github.com/alexeypetrushin/micon/blob/master/examples).
+Code in examples/ultima2/run.rb
 
-If You are interested in more samples, please look at the [actual components][rad_core_components] used in the Rad Core Framework.
+## More samples
+
+If You are interested in more samples, please take a look at the [actual components][rad_core_components] used in the Rad Core Web Framework.
 
 ## Note
 
@@ -191,4 +168,3 @@ Copyright (c) Alexey Petrushin http://petrush.in, released under the MIT license
 [ioc]: http://en.wikipedia.org/wiki/Inversion_of_control
 [rad_core]: https://github.com/alexeypetrushin/rad_core
 [rad_core_components]: https://github.com/alexeypetrushin/rad_core/tree/master/lib/components
-[article]: http://ruby-lang.info/blog/you-underestimate-the-power-of-ioc-3fh

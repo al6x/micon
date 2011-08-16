@@ -3,7 +3,7 @@ require 'rake_ext'
 project(
   name: "micon",
   gem: true,
-  summary: "Micon IoC assembles and manages Your Application",
+  summary: "Silent and invisible Killer of dependencies and configs",
 
   author: "Alexey Petrushin",
   homepage: "http://github.com/alexeypetrushin/micon"
