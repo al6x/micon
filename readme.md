@@ -31,8 +31,7 @@ Techincally Micon is sort of Dependency Injector, but because of it's simplicity
 
 ``` ruby
 require 'micon'
-# standard ruby logger
-require 'logger' 
+require 'logger' # standard ruby logger
 
 micon.register(:logger){Logger.new}
 
