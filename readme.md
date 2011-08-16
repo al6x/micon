@@ -50,7 +50,7 @@ Application.new.run
 
 Code in examples/basics.rb
 
-## Advanced example: let's build the Ultima - an Ultimate Web Framework
+## Advanced example: let's build Web Framework
 
 This example is more complicated and requires about 3-7 minutes. 
 
