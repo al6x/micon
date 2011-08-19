@@ -1,4 +1,4 @@
-# Micon - silent and invisible Killer of dependencies and configs
+# Micon - silent killer of dependencies and configs
 
 Micon allows You easilly and transparently eliminate dependencies and configs. Usually, when You are building complex system there are following tasks should be solved:
 
@@ -54,10 +54,10 @@ Code in examples/basics.rb
 
 This example is more complicated and requires about 3-7 minutes. 
 
-Let's pretend that we are building an Ultimate Framework, the RoR Killer. There will be lot's of modules and dependencies, let's see how Micon can eliminate them.
-There will be two steps, at the first we'll build it as usual, and at the second refactor it using Micon.
+Let's pretend that we are building an Ultimate Framework, the RoR Killer. There will be lot's of modules and dependencies, let's see how Micon can eliminate them. There will be only two components: router, request.
+Let's build it in two steps, at the first we'll build it as usual, and at the second refactor it using Micon.
 
-There will be following components: router, request.
+First step, building our framework **without Micon**.
 
 ``` ruby
 # setting load paths
@@ -111,7 +111,7 @@ Ultima.run '/index'
 
 Code in examples/ultima1/run.rb
 
-Below are the same example but done with Micon. As You can see there's no any assembling or configuration code, because all the components are auto-discovered, auto-loaded and auto-configured.
+Below are the same example but refactored **with using Micon**. As You can see there's no any assembling or configuration code, because all the components are auto-discovered, auto-loaded and auto-configured.
 
 ``` ruby
 # Assembling Ultima Framework
