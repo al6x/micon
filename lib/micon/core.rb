@@ -244,7 +244,7 @@ class Micon::Core
     end
 
     # Micon::Core is independent itself and there can be multiple Cores simultaneously.
-    # But some of it's extensions can work only with one global instance, and them need to know how to get it,
+    # But some of its extensions can work only with one global instance, and them need to know how to get it,
     # the MICON constant references this global instance.
     Object.send(:remove_const, :MICON) if Object.const_defined?(:MICON)
     Object.const_set :MICON, self
@@ -296,7 +296,7 @@ class Micon::Core
       initializer, dependencies, config = @metadata.initializers[key]
       raise "no initializer for :#{key} component!" unless initializer
 
-      raise "component :#{key} used before it's initialization is finished!" if @stack.include? key
+      raise "component :#{key} used before its initialization is finished!" if @stack.include? key
       begin
         dependencies.each{|d| self[d]}
         @metadata.call_before key

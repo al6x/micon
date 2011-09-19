@@ -25,7 +25,7 @@ Micon **solves all these tasks automatically**, and has the following **price** 
 That's all the price, not a big one, compared to the value, eh? 
 That all You need to know to use 95% of it, there are also 2-3 more specific methods, but they are needed very rarelly.
 
-Techincally Micon is sort of Dependency Injector, but because of it's simplicity and invisibility it looks like an alien compared to it's complex and bloated IoC / DI cousins.
+Techincally Micon is sort of Dependency Injector, but because of its simplicity and invisibility it looks like an alien compared to its complex and bloated IoC / DI cousins.
 
 ## Basic example
 

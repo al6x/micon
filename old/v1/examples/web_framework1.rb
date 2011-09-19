@@ -7,7 +7,7 @@ require 'micon'
 def micon; MICON end
 
 # Let's define some components.
-# The :logger is one per application, it's a static component (like singleton).
+# The :logger is one per application, its a static component (like singleton).
 class Logger
   register_as :logger
   attr_accessor :log_file_path
@@ -35,7 +35,7 @@ end
 
 # The :controller component should be created and destroyed dynamically,
 # for each request, we specifying that component is dynamic
-# by declaring it's :scope.
+# by declaring its :scope.
 # And, we don't know beforehead what it actully will be, for different
 # request there can be different controllers,
 # so, here we just declaring it without any initialization block, it

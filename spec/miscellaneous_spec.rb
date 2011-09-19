@@ -24,7 +24,7 @@ describe "Miscellaneous" do
         micon[:kit]
         'kit'
       end
-      lambda{micon[:kit]}.should raise_error(/component :kit used before it's initialization is finished/)
+      lambda{micon[:kit]}.should raise_error(/component :kit used before its initialization is finished/)
     end
 
     it "should not initialize twice if called from dependency (from error)" do
@@ -37,7 +37,7 @@ describe "Miscellaneous" do
         'router'
       end
 
-      -> {micon[:router]}.should raise_error(/component .* used before it's initialization is finished/)
+      -> {micon[:router]}.should raise_error(/component .* used before its initialization is finished/)
     end
 
     it "should allow to use circullar dependency in :after callback" do

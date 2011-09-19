@@ -1,4 +1,4 @@
-# the :logger is one per application, it's a static component (like singleton)
+# the :logger is one per application, its a static component (like singleton)
 class Logger
   register_as :logger
   attr_accessor :log_file_path
