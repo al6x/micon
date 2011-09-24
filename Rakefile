@@ -6,5 +6,5 @@ project(
   summary: "Silent killer of dependencies and configs",
 
   author: "Alexey Petrushin",
-  homepage: "http://github.com/alexeypetrushin/micon"
+  homepage: "http://alexeypetrushin.github.com/micon"
 )
