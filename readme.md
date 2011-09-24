@@ -83,8 +83,8 @@ You can compare these two examples and see advantages of using Dependency Inject
 
 If You are interested in more samples, please take a look at the [Rad SBS][rad_sbs] it's build using Micon.
 
-[ultima1]: ultima1.html
-[ultima2]: ultima2.html
+[ultima1]: http://alexeypetrushin.github.com/micon/ultima1.html
+[ultima2]: http://alexeypetrushin.github.com/micon/ultima3.html
 
 [project]: https://github.com/alexeypetrushin/micon
 [issues]:  https://github.com/alexeypetrushin/micon/issues
