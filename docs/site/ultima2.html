@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>ultima2.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div id="jump_to">
+    Jump To &hellip;
+    <div id="jump_wrapper">
+      <div id="jump_page">
+          <a class="source" href="basics.html">basics.rb</a>
+          <a class="source" href="ultima1.html">ultima1.rb</a>
+          <a class="source" href="ultima2.html">ultima2.rb</a>
+      </div>
+    </div>
+  </div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>ultima2.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-1'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-1">&#182;</a>
+        </div>
+        <p>This is the second version of our Ultimate Web Framework.</p>
+
+<p>Let&rsquo;s see how the <a href="ultima1.html">first version</a> can be refactored using the <a href="index.html">Micon</a> Dependency Injector.</p>
+
+<p>But before we starting, there&rsquo;s also one small step &ndash; we need a way to automatically
+load ruby classes. We need it because using DI without automatic class loader is like
+using chainsaw turned off &ndash; result will be worse than with the plain old saw.</p>
+
+<p>Installing automatic class loader:</p>
+
+<pre><code>gem install class_loader
+</code></pre>
+
+<p>Now we are ready to proceed.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>Setting load paths.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">dir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="no">File</span><span class="o">.</span><span class="n">dirname</span> <span class="bp">__FILE__</span><span class="si">}</span><span class="s2">/ultima2&quot;</span>
+<span class="vg">$LOAD_PATH</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">dir</span><span class="si">}</span><span class="s2">/lib&quot;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>Making our classes loaded automatically.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;class_loader&#39;</span>
+<span class="n">autoload_path</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">dir</span><span class="si">}</span><span class="s2">/lib&quot;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>Enabling the Micon, it need&rsquo;s to know runtime_path to find configs automatically.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;micon&#39;</span>
+<span class="n">micon</span><span class="o">.</span><span class="n">runtime_path</span> <span class="o">=</span> <span class="n">dir</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>There are two utility classes &ndash; <code>Request</code> and <code>Router</code> they are good candidates for
+components.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>This is the main class of our framework, in the previous version it used two utility
+classes &ndash; router and config. But this time they are components, so we don&rsquo;t need
+to manually configure and create it.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">Ultima</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>Making <code>:router</code> and <code>:request</code> components available as attributes.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">inject</span> <span class="n">router</span><span class="p">:</span> <span class="ss">:router</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="ss">:request</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>The main method of our framework, here we create request,
+decoding url and calling controller to generate some output.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">run</span> <span class="n">url</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p>We need to tell Micon about the <code>:request</code> scope, so the <code>:request</code> component will be
+destroyed automatically.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">micon</span><span class="o">.</span><span class="n">activate</span> <span class="ss">:request</span><span class="p">,</span> <span class="p">{}</span> <span class="k">do</span>
+      <span class="nb">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="no">Request</span><span class="o">.</span><span class="n">new</span> <span class="n">url</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-10'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-10">&#182;</a>
+        </div>
+        <p>Using router to get controller class and method from the url.
+Note that You using the <code>:router</code> component as if it&rsquo;s just an attribute.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="n">controller_class</span><span class="p">,</span> <span class="nb">method</span> <span class="o">=</span> <span class="n">router</span><span class="o">.</span><span class="n">decode</span> <span class="n">url</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-11'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-11">&#182;</a>
+        </div>
+        <p>Creating controller and calling it to generate output.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="n">controller</span> <span class="o">=</span> <span class="n">controller_class</span><span class="o">.</span><span class="n">new</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-12'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-12">&#182;</a>
+        </div>
+        <p>Note we don&rsquo;t need to explicitly pass the <code>request</code> to controller, it will be automatically injected.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="n">controller</span><span class="o">.</span><span class="n">send</span> <span class="nb">method</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-13'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-13">&#182;</a>
+        </div>
+        <p>Registering our main class as the <code>:ultima</code> component so we don&rsquo;t need to use it as a Singleton anymore.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">micon</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="ss">:ultima</span><span class="p">){</span><span class="no">Ultima</span><span class="o">.</span><span class="n">new</span><span class="p">}</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-14'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-14">&#182;</a>
+        </div>
+        <p>No need to explicitly load library and controller classes, all of them will be discowered &amp; loaded automatically.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-15'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-15">&#182;</a>
+        </div>
+        <p>No need to load config, Micon will automatically discower and load it.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p>No need to manually configure router, the <code>router.yml</code> config file will be applied automatically.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
+        </div>
+        <p>Configuring routes.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">micon</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">add_route</span> <span class="s1">&#39;/index&#39;</span><span class="p">,</span> <span class="no">PagesController</span><span class="p">,</span> <span class="ss">:index</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-18'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-18">&#182;</a>
+        </div>
+        <p>Now all is ready and we can run our application.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;/index&#39;</span>
+<span class="n">micon</span><span class="o">.</span><span class="n">ultima</span><span class="o">.</span><span class="n">run</span> <span class="n">url</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-19'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-19">&#182;</a>
+        </div>
+        <p>Go to console and type <code>ruby docs/ultima2.rb</code> &ndash; You should see something
+like this:</p>
+
+<pre><code>PagesController: displaying the :index page.
+</code></pre>
+
+<p>You can compare this version and the <a href="ultima1.html">first one</a> and see how they are differ.
+In this version You don&rsquo;t care about: loading classes, creating classes, loading configs,
+applying configs, passing utility objects (passing request to controller).</p>
+
+<p>And all this became even more significant when the App gets bigger.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>

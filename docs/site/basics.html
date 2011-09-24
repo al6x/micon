@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>basics.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div id="jump_to">
+    Jump To &hellip;
+    <div id="jump_wrapper">
+      <div id="jump_page">
+          <a class="source" href="basics.html">basics.rb</a>
+          <a class="source" href="ultima1.html">ultima1.rb</a>
+          <a class="source" href="ultima2.html">ultima2.rb</a>
+      </div>
+    </div>
+  </div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>basics.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-1'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-1">&#182;</a>
+        </div>
+        <p>Silent killer of dependencies and configs</p>
+
+<p>Micon allows You easilly and transparently eliminate dependencies and configs. Usually, when You are building complex system following tasks should be solved:</p>
+
+<ul>
+<li>where the component&rsquo;s code is located.</li>
+<li>in what order should it be loaded.</li>
+<li>what configs does the component needs to be properly initialized.</li>
+<li>where those configs are stored.</li>
+<li>how to change configs in different environments.</li>
+<li>where are dependencies for component and how they should be initialized.</li>
+<li>how to replace some components with custom implementation.</li>
+<li>how to assembly parts of application for specs/tests.</li>
+<li>how to restore state after each spec/test (isolate it from each other).</li>
+<li>how to control life-cycle of dynamically created components.</li>
+<li>connecting components to assemble an application.</li>
+</ul>
+
+<p><em>By component I mean any parts of code logically grouped together.</em></p>
+
+<p>Micon <strong>solves all these tasks automatically</strong>, and has the following <strong>price</strong> &ndash; You has to:</p>
+
+<ul>
+<li>use the <code>register(component_name, &amp;initialization_block)</code> method for component initialization.</li>
+<li>use the <code>inject(component_name)</code> to whire components toghether.</li>
+<li>place component definitions in the <code>lib/components</code> folder.</li>
+</ul>
+
+<p>That&rsquo;s all the price, not a big one, compared to the value, eh? It&rsquo;s all You need to know about it to use 95% of it, there are also 2-3 more specific methods, but they are needed very rarelly.</p>
+
+<p>Techincally Micon is sort of Dependency Injector, but because of its simplicity and invisibility it looks like an alien compared to its complex and bloated IoC / DI cousins.</p>
+
+<p>Install Micon with Rubygems:</p>
+
+<pre><code>gem install micon
+</code></pre>
+
+<p>Once installed, You can proceed with the examples below.</p>
+
+<p>The project hosted on <a href="https://github.com/alexeypetrushin/micon">GitHub</a>. You can report bugs and discuss features on the <a href="https://github.com/alexeypetrushin/micon/issues">issues page</a>.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Basic_example'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Basic_example">&#182;</a>
+        </div>
+        <h3>Basic example</h3>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;micon&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;logger&#39;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>Registering <code>:logger</code> component.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">micon</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="ss">:logger</span><span class="p">){</span><span class="no">Logger</span><span class="o">.</span><span class="n">new</span> <span class="no">STDOUT</span><span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">Application</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>Whiring the <code>:logger</code> component and application together.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">inject</span> <span class="n">logger</span><span class="p">:</span> <span class="ss">:logger</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Now You can use <code>:logger</code> as if it&rsquo;s an usual class member.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">run</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s1">&#39;running ...&#39;</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>Running our application, type:</p>
+
+<pre><code>ruby docs/basics.rb
+</code></pre>
+
+<p>And You should see in the console something like this:</p>
+
+<pre><code>[2011-08-16T19:09:05.921238 #24944]  INFO &mdash; : running &hellip;
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">Application</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">run</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Advanced_example'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Advanced_example">&#182;</a>
+        </div>
+        <h3>Advanced example</h3>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>It&rsquo;s hard to see advantages of Dependency Injection using trivial example, so this example is
+more complicated.</p>
+
+<p>Let&rsquo;s pretend that we are building the Ultimate Web Framework, RoR Killer. There will be lot&rsquo;s
+of modules and dependencies, let&rsquo;s see how Micon can eliminate them.</p>
+
+<p>We build our framework in two steps:</p>
+
+<ul>
+<li>the first version <a href="ultima1.html">ultima1.rb</a> build <strong>without Micon</strong>.</li>
+<li>second version <a href="ultima2.html">ultima2.rb</a> refactored <strong>using Micon</strong>.</li>
+</ul>
+
+<p>You can compare these two examples and see advantages of using Dependency Injection.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
