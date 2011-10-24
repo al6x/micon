@@ -277,23 +277,34 @@ class Micon::Core
         dependencies.each{|d| self[d]}
         @metadata.call_before key
 
+        # We need this check to detect and prevent component from been used before its initialization
+        # is finished.
+        @stack[key] = true
+
         # We need to check container first, in complex cases (circullar dependency)
         # the object already may be initialized.
         # See "should allow to use circullar dependency in :after callback".
-        @stack[key] = true
-        o = (container && container[key]) || initializer.call
+        o = (container && container[key]) || begin
+          # Loading component configuration, comparing to nil is important,
+          # we use false if there's no config.
+          if config == nil
+            config = get_config key
+            config = false unless config
+            @metadata.initializers[key] = [initializer, dependencies, config]
+          end
 
-        if config
-          apply_config o, config
-        elsif config != false
-          # Loading and caching config.
-          config = get_config key
-          config = false unless config # We use false to differentiate from nil.
-          @metadata.initializers[key] = [initializer, dependencies, config]
-
-          apply_config o, config if config
+          # Use arity to determine should we apply cofig automatically or
+          # component wants to apply it by themself.
+          if initializer.arity == 1
+            initializer.call config
+          else
+            o = initializer.call
+            config.each{|k, v| o.send("#{k}=", v)} if config
+            o
+          end
         end
 
+        # Storing created component in container.
         container[key] = o if container
 
         raise "initializer for component :#{key} returns nill!" unless o
@@ -309,14 +320,14 @@ class Micon::Core
       ::Micon::Config.new(self, key).load
     end
 
-    def apply_config component, config
-      if component.respond_to? :configure!
-        component.configure! config
-      else
-        config.each{|k, v| component.send("#{k}=", v)}
-      end
-    end
-
+    # def apply_config component, config
+    #   if component.respond_to? :configure!
+    #     component.configure! config
+    #   else
+    #     config.each{|k, v| component.send("#{k}=", v)}
+    #   end
+    # end
+    #
     # Module.name doesn't works correctly for Anonymous classes,
     # try to execute this code:
     #

@@ -10,10 +10,13 @@ describe "Configuration" do
     end
   end
 
-  it "should allow to explicitly configure component if configure! method provided" do
+  it "should use custom configuration if we explicitly require config in initializer" do
     logger = Object.new
-    logger.should_receive(:configure!).with(level: :info)
-    micon.register(:logger){logger}
+    logger.should_receive(:do_custom_initialization).with(level: :info)
+    micon.register :logger do |config|
+      logger.do_custom_initialization config
+      logger
+    end
 
     with_load_path "#{spec_dir}/basic/lib" do
       micon[:logger]
