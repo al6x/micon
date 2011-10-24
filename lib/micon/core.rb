@@ -1,12 +1,8 @@
-# Predefined scopes are: :application | :session | :instance | :"custom_name"
-#
-# Micons :"custom_name" are managed by 'scope_begin' / 'scope_end' methods
-#
-# :"custom_name" can't be nested (it will destroy old and start new one) and always should be explicitly started!.
+# There are 3 types of component scopes: :application, :instance and custom scope.
+# Custom scopes are managed with `activate` and `deactivate` methods.
 class Micon::Core
-  #
-  # Scope Management
-  #
+  # Scope Management.
+
   attr_accessor :custom_scopes
 
   def activate sname, container, &block
@@ -61,10 +57,8 @@ class Micon::Core
     @application.empty? and @custom_scopes.empty?
   end
 
+  # Component Management.
 
-  #
-  # Object Management
-  #
   def include? key
     sname = @registry[key]
 
@@ -75,7 +69,7 @@ class Micon::Core
       true
     when :application
       @application.include? key
-    else # custom
+    else # custom scope.
       container = @custom_scopes[sname]
       return false unless container
       container.include? key
@@ -95,7 +89,7 @@ class Micon::Core
       else
         return o
       end
-    else # custom
+    else # custom scope.
       container = @custom_scopes[sname]
       raise_without_self "Scope '#{sname}' not started!" unless container
       o = container[key]
@@ -117,7 +111,7 @@ class Micon::Core
       raise_without_self "You can't outject variable with the 'instance' sname!"
     when :application
       @application[key] = value
-    else # custom
+    else # custom scope.
       container = @custom_scopes[sname]
       raise_without_self "Scope '#{sname}' not started!" unless container
       container[key] = value
@@ -129,7 +123,7 @@ class Micon::Core
   end
 
   def delete key
-    sname = @registry[key] # || autoload_component_definition(key)
+    sname = @registry[key]
 
     case sname
     when nil
@@ -137,9 +131,8 @@ class Micon::Core
       raise_without_self "You can't outject variable with the 'instance' scope!"
     when :application
       @application.delete key
-    else # Custom
+    else # custom scope.
       container = @custom_scopes[sname]
-      # raise_without_self "Scope '#{sname}' not started!" unless container
       container.delete key if container
     end
   end
@@ -154,9 +147,8 @@ class Micon::Core
     self[key]
   end
 
-  #
-  # Metadata
-  #
+  # Metadata.
+
   attr_accessor :metadata
 
   def register key, options = {}, &initializer
@@ -165,7 +157,6 @@ class Micon::Core
 
     sname = options.delete(:scope) || :application
     dependencies = Array(options.delete(:require) || options.delete(:depends_on))
-    # constant = options.delete(:constant) || false
 
     raise "unknown options :#{options.keys.join(', :')}!" unless options.empty?
 
@@ -173,17 +164,11 @@ class Micon::Core
       raise "internal error, reference to registry aren't equal to actual registry!"
     end
     @metadata.registry[key] = sname
-    @metadata.initializers[key] = [initializer, dependencies] #, constant]
-    # if constant
-    #   raise "component '#{key}' defined as constant must be a symbol!" unless key.is_a? Symbol
-    #   raise "component '#{key}' defined as constant can have only :application scope!" unless sname == :application
-    #   @constants[key] = true
-    # end
+    @metadata.initializers[key] = [initializer, dependencies]
   end
 
   def unregister key
     @metadata.delete key
-    # @constants.delete key
   end
 
   def before component, options = {}, &block
@@ -216,8 +201,6 @@ class Micon::Core
     @metadata.register_after_scope sname, &block
   end
 
-
-
   def clone
     another = super
     %w(@metadata @application @custom_scopes).each do |name| # @loaded_classes, @constants
@@ -232,9 +215,9 @@ class Micon::Core
 
   def initialize!
     unless @initialized
-      # quick access to Metadata inner variable.
-      # I intentially broke the Metadata incapsulation to provide better performance, don't refactor it.
-      @registry = {} # @loaded_classes, @constants = {}, {}
+      # Quick access to Metadata inner variable. I intentially broke
+      # the Metadata incapsulation to provide better performance, don't refactor it.
+      @registry = {}
       @metadata = Micon::Metadata.new(@registry)
       @stack = {}
 
@@ -252,19 +235,9 @@ class Micon::Core
 
   def deinitialize!
     Object.send(:remove_const, :MICON) if Object.const_defined?(:MICON)
-
-    # @loaded_classes.each do |class_name, tuple|
-    #   namespace, const = tuple
-    #   namespace.send(:remove_const, const)
-    # end
-    # @loaded_classes.clear
   end
 
-  #
-  # :mode, :runtime_path, used in component configuration
-  # - 'app/runtime'
-  # - :development, :test, :production
-  #
+  # `runtime_path` is used to search for component configurations, it may be `app/runtime` for example..
   def runtime_path; @runtime_path || raise(":runtime_path not defined!") end
   def runtime_path= runtime_path
     runtime_path, force = runtime_path
@@ -273,6 +246,9 @@ class Micon::Core
   end
   def runtime_path?; !!@runtime_path end
 
+  # `mode` used to search for component configuration, examples:
+  # - `app/runtime/logger.production.yml`
+  # - `app/runtime/production/logger.yml`
   def mode; @mode || raise(":mode not defined!") end
   def mode= mode
     mode, force = mode
@@ -301,7 +277,7 @@ class Micon::Core
         dependencies.each{|d| self[d]}
         @metadata.call_before key
 
-        # we need to check container first, in complex cases (circullar dependency)
+        # We need to check container first, in complex cases (circullar dependency)
         # the object already may be initialized.
         # See "should allow to use circullar dependency in :after callback".
         @stack[key] = true
@@ -309,9 +285,9 @@ class Micon::Core
 
         unless config == false
           unless config
-            # loading and caching config
+            # loading and caching config.
             config = get_config key
-            config = false unless config # we use false to differentiate from nil
+            config = false unless config # we use false to differentiate from nil.
             @metadata.initializers[key] = [initializer, dependencies, config]
 
             apply_config o, config if config
@@ -336,40 +312,39 @@ class Micon::Core
     end
 
     def apply_config component, config
-      # config already have keys like "#{k}="
+      # config already have keys like "#{k}=".
       config.each{|k, v| component.send(k, v)}
     end
 
+    # Module.name doesn't works correctly for Anonymous classes,
+    # try to execute this code:
+    #
+    #     class Module
+    #      def const_missing const
+    #        p self.to_s
+    #      end
+    #     end
+    #
+    #     class A
+    #       class << self
+    #         def a
+    #           p self
+    #           MissingConst
+    #         end
+    #       end
+    #     end
+    #
+    #     A.a
+    #
+    # The output will be:
+    #
+    #     A
+    #     "#<Class:A>"
     def name_hack namespace
       if namespace
         namespace.to_s.gsub("#<Class:", "").gsub(">", "")
       else
         ""
       end
-      # Namespace Hack description
-      # Module.name doesn't works correctly for Anonymous classes.
-      # try to execute this code:
-      #
-      #class Module
-      #  def const_missing const
-      #    p self.to_s
-      #  end
-      #end
-      #
-      #class A
-      #    class << self
-      #        def a
-      #            p self
-      #            MissingConst
-      #        end
-      #    end
-      #end
-      #
-      #A.a
-      #
-      # the output will be:
-      # A
-      # "#<Class:A>"
-      #
     end
 end

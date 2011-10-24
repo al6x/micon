@@ -1,7 +1,4 @@
-#
-# Generates helper methods for Micon,
-# so you can use micon.config instead of micon[:config]
-#
+# Generates helper methods for Micon, so you can use micon.logger instead of micon[:logger]
 module Micon::Helper
   def method_missing m, *args, &block
     super if args.size > 1 or block

@@ -15,7 +15,7 @@ end
   class
 }.each{|f| require "micon/#{f}"}
 
-# Initializing Micon
+# Initializing Micon.
 Micon::Core.send :include, Micon::Helper
 micon = Micon::Core.new
 micon.initialize!
