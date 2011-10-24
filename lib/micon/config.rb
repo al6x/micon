@@ -14,7 +14,7 @@ class Micon::Config
       c = YAML.load_file(f)
       next unless c
       raise "component config must be a Hash (#{f})!" unless c.is_a? Hash
-      c.each{|k, v| config[:"#{k}="] = v}
+      c.each{|k, v| config[k.to_sym] = v}
     end
 
     config.empty? ? nil : config

@@ -283,17 +283,15 @@ class Micon::Core
         @stack[key] = true
         o = (container && container[key]) || initializer.call
 
-        unless config == false
-          unless config
-            # loading and caching config.
-            config = get_config key
-            config = false unless config # we use false to differentiate from nil.
-            @metadata.initializers[key] = [initializer, dependencies, config]
+        if config
+          apply_config o, config
+        elsif config != false
+          # Loading and caching config.
+          config = get_config key
+          config = false unless config # We use false to differentiate from nil.
+          @metadata.initializers[key] = [initializer, dependencies, config]
 
-            apply_config o, config if config
-          else
-            apply_config o, config
-          end
+          apply_config o, config if config
         end
 
         container[key] = o if container
@@ -312,8 +310,11 @@ class Micon::Core
     end
 
     def apply_config component, config
-      # config already have keys like "#{k}=".
-      config.each{|k, v| component.send(k, v)}
+      if component.respond_to? :configure!
+        component.configure! config
+      else
+        config.each{|k, v| component.send("#{k}=", v)}
+      end
     end
 
     # Module.name doesn't works correctly for Anonymous classes,

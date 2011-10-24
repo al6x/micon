@@ -10,6 +10,16 @@ describe "Configuration" do
     end
   end
 
+  it "should allow to explicitly configure component if configure! method provided" do
+    logger = Object.new
+    logger.should_receive(:configure!).with(level: :info)
+    micon.register(:logger){logger}
+
+    with_load_path "#{spec_dir}/basic/lib" do
+      micon[:logger]
+    end
+  end
+
   it "should merge in order: conf <- conf.mode <- runtime <- runtime.mode" do
     micon.register(:object){::OpenStruct.new}
     with_load_path "#{spec_dir}/order/lib" do
