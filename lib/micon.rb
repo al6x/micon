@@ -7,8 +7,6 @@ module Micon
   autoload :Metadata, 'micon/metadata'
 end
 
-# Initializing Micon.
-micon = Micon::Core.new
-micon.initialize!
+autoload :MICON, 'micon/setup'
 
 def micon; ::MICON end unless $dont_create_micon_shortcut
