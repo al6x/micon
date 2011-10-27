@@ -1,22 +1,13 @@
-require 'yaml'
+require 'micon/support'
 
 module Micon
+  autoload :Metadata, 'micon/metadata'
+  autoload :Config,   'micon/config'
+  autoload :Core,     'micon/core'
+  autoload :Metadata, 'micon/metadata'
 end
 
-%w{
-  support
-
-  metadata
-  config
-  core
-  helper
-
-  module
-  class
-}.each{|f| require "micon/#{f}"}
-
 # Initializing Micon.
-Micon::Core.send :include, Micon::Helper
 micon = Micon::Core.new
 micon.initialize!
 

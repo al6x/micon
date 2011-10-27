@@ -11,6 +11,7 @@ class Micon::Config
 
     config = {}
     files.compact.each do |f|
+      require 'yaml'
       c = YAML.load_file(f)
       next unless c
       raise "component config must be a Hash (#{f})!" unless c.is_a? Hash

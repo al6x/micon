@@ -1,9 +1,6 @@
-require 'rspec_ext'
-require 'ostruct'
-
 require "micon"
 
-Micon::Core.send :include, Micon::Helper
+require 'rspec_ext'
 
 def micon; $micon end
 def micon= value

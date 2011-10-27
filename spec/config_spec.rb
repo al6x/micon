@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'ostruct'
 
 describe "Configuration" do
   before{self.micon = Micon::Core.new}

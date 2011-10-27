@@ -153,7 +153,6 @@ class Micon::Core
 
   def register key, options = {}, &initializer
     raise "key should not be nil or false value!" unless key
-    options = options.symbolize_keys
 
     sname = options.delete(:scope) || :application
     dependencies = Array(options.delete(:require) || options.delete(:depends_on))
@@ -358,5 +357,31 @@ class Micon::Core
       else
         ""
       end
+    end
+
+    def raise_without_self message
+      raise RuntimeError, message, caller.select{|path| path !~ /\/lib\/micon\//}
+    end
+
+    # Generates helper methods, so you can use `micon.logger` instead of `micon[:logger]`
+    def method_missing m, *args, &block
+      super if args.size > 1 or block
+
+      key = m.to_s.sub(/[?=]$/, '').to_sym
+      self.class.class_eval do
+        define_method key do
+          self[key]
+        end
+
+        define_method "#{key}=" do |value|
+          self[key] = value
+        end
+
+        define_method "#{key}?" do
+          include? key
+        end
+      end
+
+      send m, *args
     end
 end
