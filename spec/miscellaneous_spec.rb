@@ -54,19 +54,19 @@ describe "Miscellaneous" do
     end
 
     it "should allow circullar dependencies in :after callback" do
-      micon.register :environment do
+      micon.register :an_environment do
         'environment'
       end
 
-      micon.register :router, depends_on: :environment do
+      micon.register :a_router, depends_on: :an_environment do
         'router'
       end
 
-      micon.after :environment do
-        micon[:router]
+      micon.after :an_environment do
+        micon[:a_router]
       end
 
-      micon[:router]
+      micon[:a_router]
     end
   end
 

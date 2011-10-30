@@ -32,7 +32,7 @@ micon.runtime_path = dir
 # to manually configure and create it.
 class Ultima
   # Making `:router` and `:request` components available as attributes.
-  inject router: :router, request: :request
+  inject :router, :request
 
   # The main method of our framework, here we create request,
   # decoding url and calling controller to generate some output.

@@ -7,7 +7,7 @@ class Micon::Config
   def load
     files = []
     files.push *config_paths.collect{|path| find_file(path, $LOAD_PATH)}
-    files.push *runtime_config_paths.collect{|path| find_file(path, [micon.runtime_path])} if micon.runtime_path?
+    files.push *runtime_config_paths.collect{|path| find_file(path, [micon.runtime_path])}
 
     config = {}
     files.compact.each do |f|
@@ -41,7 +41,7 @@ class Micon::Config
 
     def find_file path, directories
       files = directories.collect{|dir| "#{dir}#{path}"}.select{|f| File.exist? f}
-      raise "multiple configs for :#{name} component" if files.size > 1
+      raise %(multiple configs for :#{name} component ('#{files.join("', '")}')) if files.size > 1
       files.first
     end
 end

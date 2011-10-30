@@ -37,7 +37,6 @@ autoload_path lib_dir
 # Note, that there are also logger.production.yml, Micon is smart
 # and will merge configs in the following order:
 # logger.yml <- logger.<env>.yml <- <runtime_path>/config/logger.yml
-# (If you define :environment and :runtime_path variables).
 
 # Let's pretend that there's a Web Server and run our application,
 # You should see something like this in the console:

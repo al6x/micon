@@ -8,15 +8,19 @@ class Class
 end
 
 Module.class_eval do
-  # Usage: `inject logger: :logger`.
-  def inject attributes
-    ::MICON.raise_without_self "Invalid argument!" unless attributes.is_a? Hash
-    attributes.each do |name, specificator|
-      ::MICON.raise_without_self "Attribute name should be a Symbol!" unless name.is_a? Symbol
+  # Usage: `inject :logger` or `inject logger: :logger`.
+  def inject *attributes
+    options = attributes.last.is_a?(Hash) ? attributes.pop : {}
+    attributes.each{|name| options[name] = name}
 
-      define_method(name){::MICON[specificator]}
-      define_method("#{name}="){|value| ::MICON[specificator] = value}
-      define_method("#{name}?"){::MICON.include? specificator}
+    options.each do |attr_name, component_name|
+      unless attr_name.is_a? Symbol
+        ::MICON.raise_without_self "attribute name #{attr_name} should be a Symbol!"
+      end
+
+      define_method(attr_name){::MICON[component_name]}
+      define_method("#{attr_name}="){|component| ::MICON[component_name] = component}
+      define_method("#{attr_name}?"){::MICON.include? component_name}
     end
   end
 end

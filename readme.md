@@ -47,7 +47,7 @@ micon.register(:logger){Logger.new STDOUT}
 
 class Application
   # Whiring the `:logger` component and application together.
-  inject logger: :logger
+  inject :logger
 
   # Now You can use `:logger` as if it's an usual class member.
   def run

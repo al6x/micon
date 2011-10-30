@@ -5,7 +5,7 @@ class Micon::Core
 
   attr_accessor :custom_scopes
 
-  def activate sname, container, &block
+  def activate sname, container = {}, &block
     raise_without_self "Only custom scopes can be activated!" if sname == :application or sname == :instance
     raise "container should have type of Hash but has #{container.class.name}" unless container.is_a? Hash
 
@@ -237,7 +237,7 @@ class Micon::Core
   end
 
   # `runtime_path` is used to search for component configurations, it may be `app/runtime` for example..
-  def runtime_path; @runtime_path || raise(":runtime_path not defined!") end
+  def runtime_path; @runtime_path ||= File.expand_path('.') end
   def runtime_path= runtime_path
     runtime_path, force = runtime_path
     raise "some components has been already initialized before You set :runtime_path!" unless empty? or force
@@ -248,13 +248,25 @@ class Micon::Core
   # `mode` used to search for component configuration, examples:
   # - `app/runtime/logger.production.yml`
   # - `app/runtime/production/logger.yml`
-  def mode; @mode || raise(":mode not defined!") end
+  def mode; @mode ||= :development end
   def mode= mode
     mode, force = mode
     raise "some components has been already initialized before You set :mode!" unless empty? or force
     @mode = mode
   end
   def mode?; !!@mode end
+
+  def development?; mode == :development end
+  def production?; mode == :production end
+  def test?; mode == :test end
+
+  def development &block; block.call if development? end
+  def production &block; block.call if production? end
+  def test &block; block.call if test? end
+
+  def raise_without_self message
+    raise RuntimeError, message, caller.select{|path| path !~ /\/lib\/micon\//}
+  end
 
   protected
     def autoload_component_definition key, bang = true
@@ -357,10 +369,6 @@ class Micon::Core
       else
         ""
       end
-    end
-
-    def raise_without_self message
-      raise RuntimeError, message, caller.select{|path| path !~ /\/lib\/micon\//}
     end
 
     # Generates helper methods, so you can use `micon.logger` instead of `micon[:logger]`

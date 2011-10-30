@@ -2,7 +2,7 @@
 # When the server receive web request, it calls the :call method of our RackAdapter
 class RackAdapter
   # Injecting components
-  inject request: :request, controller: :controller
+  inject :request, :controller
 
   def call env
     # We need to tell Micon that the :request scope is started, so it will know

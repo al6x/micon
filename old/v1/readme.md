@@ -61,7 +61,7 @@ micon.register :controller, scope: :request
 # don't register it as component.
 class PagesController
   # We need access to :logger and :request, let's inject them
-  inject logger: :logger, request: :request
+  inject :logger, :request
 
   def index
     # Here we can use injected component
@@ -84,7 +84,7 @@ micon.register :request, scope: :request
 # When the server receive web request, it calls the :call method of our RackAdapter
 class RackAdapter
   # Injecting components
-  inject request: :request, controller: :controller
+  inject :request, :controller
 
   def call env
     # We need to tell Micon that the :request scope is started, so it will know
@@ -161,7 +161,6 @@ autoload_path lib_dir
 # Note, that there are also logger.production.yml, Micon is smart
 # and will merge configs in the following order:
 # logger.yml <- logger.<env>.yml <- <runtime_path>/config/logger.yml
-# (If you define :environment and :runtime_path variables).
 
 # Let's pretend that there's a Web Server and run our application,
 # You should see something like this in the console:

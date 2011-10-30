@@ -46,7 +46,7 @@ micon.register :controller, scope: :request
 # don't register it as component.
 class PagesController
   # We need access to :logger and :request, let's inject them
-  inject logger: :logger, request: :request
+  inject :logger, :request
 
   def index
     # Here we can use injected component
@@ -69,7 +69,7 @@ micon.register :request, scope: :request
 # When the server receive web request, it calls the :call method of our RackAdapter
 class RackAdapter
   # Injecting components
-  inject request: :request, controller: :controller
+  inject :request, :controller
 
   def call env
     # We need to tell Micon that the :request scope is started, so it will know
